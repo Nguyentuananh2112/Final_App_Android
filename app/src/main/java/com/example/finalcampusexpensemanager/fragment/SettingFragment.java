@@ -1,5 +1,6 @@
 package com.example.finalcampusexpensemanager.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -7,6 +8,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.example.finalcampusexpensemanager.R;
 
@@ -56,11 +58,18 @@ public class SettingFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_setting, container, false);
+        View  view = inflater.inflate(R.layout.fragment_setting, container, false);
+        TextView tvTitle = view.findViewById(R.id.tvTitle);
+        Intent intent =getActivity().getIntent();
+        Bundle bundle = intent.getExtras();
+        if (bundle!= null){
+            String username = bundle.getString("USERNAME_ACCOUNT","");
+            tvTitle.setText("Hi: "+username);
+        }
+        return  view;
     }
 }

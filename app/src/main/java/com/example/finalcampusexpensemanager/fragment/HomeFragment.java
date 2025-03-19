@@ -12,7 +12,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.finalcampusexpensemanager.R;
-import com.example.finalcampusexpensemanager.adapter.ProductListAdapter;
 import com.example.finalcampusexpensemanager.model.ProductModel;
 
 import java.util.ArrayList;
@@ -64,34 +63,13 @@ public class HomeFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
-        ListView lvProduct = view.findViewById(R.id.lvProductList);
-        List<ProductModel> productModels = new ArrayList<>();
-        productModels.add(new ProductModel(1,"Iphone 16 Pro max",20000000,"https://cdn.tgdd.vn/Products/Images/1363/314738/mieng-dan-kinh-cuong-luc-iphone-15-pro-jcpal-thumb-600x600.jpg"));
-        productModels.add(new ProductModel(2,"Iphone 13 Pro max",40000000,"https://cdn.tgdd.vn/Products/Images/1363/314738/mieng-dan-kinh-cuong-luc-iphone-15-pro-jcpal-thumb-600x600.jpg"));
-        productModels.add(new ProductModel(3,"Iphone 18 Pro max",70000000,"https://cdn.tgdd.vn/Products/Images/1363/314738/mieng-dan-kinh-cuong-luc-iphone-15-pro-jcpal-thumb-600x600.jpg"));
-        productModels.add(new ProductModel(4,"Iphone 12 Pro max",40000000,"https://cdn.tgdd.vn/Products/Images/1363/314738/mieng-dan-kinh-cuong-luc-iphone-15-pro-jcpal-thumb-600x600.jpg"));
-
-        ProductListAdapter adapter = new ProductListAdapter(getContext(),productModels);
-        lvProduct.setAdapter(adapter);
-
-        lvProduct.setClickable(true);
-        lvProduct.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ProductModel pd = (ProductModel) lvProduct.getItemAtPosition(position);
-                String name = pd.getName();
-                int price = pd.getPrice();
-                Toast.makeText(getContext(), name + " - " + price, Toast.LENGTH_SHORT).show();
-
-            }
-        });
-
-        return view;
+        return inflater.inflate(R.layout.fragment_home, container, false);
     }
+
+
+
 }
