@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="button_main">#1681FF</color>
+    <color name="colorTextSecondary">#757575</color>
+    <color name="red">#FF0000</color> <!-- Đỏ -->
+    <color name="green">#6ABE6E</color> <!-- Xanh lục -->
+
+    <color name="selected_color">#1681FF</color>
+    <color name="unselected_color">#808080</color>
+    <color name="delete_red">#FF0000</color>
+    <color name="white_">#FFFFFF</color>
+
+    <color name="blue_primary">#2196F3</color>
+    <color name="text_secondary">#757575</color>
+
+
+    <color name="toggle_selected">#FFFFFF</color> <!-- White for selected background -->
+    <color name="toggle_unselected">#E0E0E0</color> <!-- Light gray for unselected background -->
+    <color name="toggle_text_selected">#1681FF</color> <!-- Blue for selected text -->
+    <color name="toggle_text_unselected">#757575</color> <!-- Gray for unselected text -->
+</resources>
