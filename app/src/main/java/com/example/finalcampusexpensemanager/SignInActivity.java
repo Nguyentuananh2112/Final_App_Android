@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.finalcampusexpensemanager.db.DatabaseHelper;
 import com.example.finalcampusexpensemanager.db.UserDb;
 import com.example.finalcampusexpensemanager.model.UserModel;
 import com.google.android.material.textfield.TextInputEditText;
@@ -29,6 +30,7 @@ public class SignInActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+
 
         userDb = new UserDb(SignInActivity.this);
         tvForgetPassword = findViewById(R.id.tvForgetpassword);

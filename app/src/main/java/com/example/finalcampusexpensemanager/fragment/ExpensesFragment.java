@@ -1,66 +1,113 @@
 package com.example.finalcampusexpensemanager.fragment;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.finalcampusexpensemanager.R;
+import com.example.finalcampusexpensemanager.db.DatabaseHelper;
+import com.example.finalcampusexpensemanager.model.ExpenseModel;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ExpensesFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+
 public class ExpensesFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public ExpensesFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ExpensesFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ExpensesFragment newInstance(String param1, String param2) {
-        ExpensesFragment fragment = new ExpensesFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private DatabaseHelper dbHelper;
+    private int userId;
+    private RecyclerView recyclerView;
+    private ExpenseAdapter adapter;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_expenses, container, false);
+
+        dbHelper = new DatabaseHelper(getContext());
+        userId = getActivity().getIntent().getExtras().getInt("USER_ID", 0);
+
+        recyclerView = view.findViewById(R.id.rv_expenses);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        // Thêm DividerItemDecoration ngay sau khi thiết lập LayoutManager
+        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL));
+        loadExpenses();
+
+        EditText etDescription = view.findViewById(R.id.et_description);
+        EditText etAmount = view.findViewById(R.id.et_amount);
+        Button btnAddExpense = view.findViewById(R.id.btn_add_expense);
+
+        btnAddExpense.setOnClickListener(v -> {
+            String description = etDescription.getText().toString().trim();
+            String amountStr = etAmount.getText().toString().trim();
+            if (description.isEmpty() || amountStr.isEmpty()) {
+                Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            int amount = (int) (Double.parseDouble(amountStr) * 100); // Convert to cents
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            String date = sdf.format(Calendar.getInstance().getTime());
+
+            long result = dbHelper.insertExpense(userId, 1, description, date, amount, false, null, null, null);
+            if (result != -1) {
+                Toast.makeText(getContext(), "Expense added", Toast.LENGTH_SHORT).show();
+                etDescription.setText("");
+                etAmount.setText("");
+                loadExpenses();
+            } else {
+                Toast.makeText(getContext(), "Failed to add expense", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        return view;
+    }
+
+    private void loadExpenses() {
+        List<ExpenseModel> expenses = dbHelper.getExpensesByUser(userId);
+        adapter = new ExpenseAdapter(expenses);
+        recyclerView.setAdapter(adapter);
+    }
+
+    private static class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHolder> {
+        private List<ExpenseModel> expenses;
+
+        public ExpenseAdapter(List<ExpenseModel> expenses) {
+            this.expenses = expenses;
         }
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_expenses, container, false);
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.expense_item, parent, false);
+            return new ViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder holder, int position) {
+            ExpenseModel expense = expenses.get(position);
+            holder.textView.setText(expense.getDescription() + ": $" + (expense.getAmount() / 100.0));
+        }
+
+        @Override
+        public int getItemCount() {
+            return expenses.size();
+        }
+
+        static class ViewHolder extends RecyclerView.ViewHolder {
+            TextView textView;
+
+            ViewHolder(View itemView) {
+                super(itemView);
+                textView = itemView.findViewById(android.R.id.text1);
+            }
+        }
     }
 }

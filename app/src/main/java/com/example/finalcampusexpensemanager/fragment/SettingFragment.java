@@ -2,74 +2,42 @@ package com.example.finalcampusexpensemanager.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
+
 import com.example.finalcampusexpensemanager.R;
+import com.example.finalcampusexpensemanager.SignInActivity;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link SettingFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class SettingFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public SettingFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment SettingFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static SettingFragment newInstance(String param1, String param2) {
-        SettingFragment fragment = new SettingFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View  view = inflater.inflate(R.layout.fragment_setting, container, false);
-        TextView tvTitle = view.findViewById(R.id.tvTitle);
-        Intent intent =getActivity().getIntent();
-        Bundle bundle = intent.getExtras();
-        if (bundle!= null){
-            String username = bundle.getString("USERNAME_ACCOUNT","");
-            tvTitle.setText("Hi: "+username);
-        }
-        return  view;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_setting, container, false);
+
+        Bundle bundle = getActivity().getIntent().getExtras();
+        String username = bundle.getString("USERNAME_ACCOUNT", "");
+        String email = bundle.getString("USER_EMAIL", "");
+        String phone = bundle.getString("USER_PHONE", "");
+
+        TextView tvUsername = view.findViewById(R.id.tv_username);
+        TextView tvEmail = view.findViewById(R.id.tv_email);
+        TextView tvPhone = view.findViewById(R.id.tv_phone);
+        Button btnLogout = view.findViewById(R.id.btn_logout);
+
+        tvUsername.setText("Username: " + username);
+        tvEmail.setText("Email: " + email);
+        tvPhone.setText("Phone: " + phone);
+
+        btnLogout.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), SignInActivity.class);
+            startActivity(intent);
+            getActivity().finish();
+        });
+
+        return view;
     }
 }

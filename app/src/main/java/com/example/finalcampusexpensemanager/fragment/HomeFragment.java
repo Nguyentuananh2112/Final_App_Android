@@ -1,75 +1,60 @@
 package com.example.finalcampusexpensemanager.fragment;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
 
 import com.example.finalcampusexpensemanager.R;
-import com.example.finalcampusexpensemanager.model.ProductModel;
+import com.example.finalcampusexpensemanager.db.DatabaseHelper;
+import com.example.finalcampusexpensemanager.model.BudgetModel;
+import com.example.finalcampusexpensemanager.model.ExpenseModel;
 
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class HomeFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public HomeFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private DatabaseHelper dbHelper;
+    private int userId;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        dbHelper = new DatabaseHelper(getContext());
+        userId = getActivity().getIntent().getExtras().getInt("USER_ID", 0);
+
+        TextView tvTotalExpenses = view.findViewById(R.id.tv_total_expenses);
+        TextView tvTotalBudget = view.findViewById(R.id.tv_total_budget);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
+        String currentMonth = sdf.format(Calendar.getInstance().getTime());
+
+        List<ExpenseModel> expenses = dbHelper.getExpensesByUser(userId);
+        List<BudgetModel> budgets = dbHelper.getBudgetsByUser(userId);
+
+        int totalExpenses = 0;
+        for (ExpenseModel expense : expenses) {
+            if (expense.getDate().startsWith(currentMonth)) {
+                totalExpenses += expense.getAmount();
+            }
         }
+
+        int totalBudget = 0;
+        for (BudgetModel budget : budgets) {
+            if (budget.getMonth().equals(currentMonth)) {
+                totalBudget += budget.getBudgetAmount();
+            }
+        }
+
+        tvTotalExpenses.setText("Total Expenses: $" + (totalExpenses / 100.0));
+        tvTotalBudget.setText("Total Budget: $" + (totalBudget / 100.0));
+
+        return view;
     }
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false);
-    }
-
-
-
 }
