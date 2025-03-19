@@ -22,7 +22,7 @@ import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "campus_expenses";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 4;
 
     // Bảng users
     public static final String TABLE_USERS = "users";
@@ -132,7 +132,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_EXPENSES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BUDGETS);
         onCreate(db);
+
+
     }
+
+
 
     // Phương thức từ UserDb
     public long insertUserToDatabase(String username, String password, String email, String phone) {
