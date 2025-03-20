@@ -30,6 +30,7 @@ public class DashboardActivity
     DrawerLayout drawerLayout;
     Toolbar toolbar;
     ViewPager2 viewPager2;
+    int userId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,6 +54,11 @@ public class DashboardActivity
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+        // Lấy user_id từ Intent
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            userId = bundle.getInt("USER_ID", 0);
+        }
         setupViewPager();
 
 
@@ -120,6 +126,7 @@ public class DashboardActivity
 
     private void setupViewPager(){
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
+        viewPagerAdapter.setUserId(userId); // Truyền user_id cho Adapter
         viewPager2.setAdapter(viewPagerAdapter);
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override

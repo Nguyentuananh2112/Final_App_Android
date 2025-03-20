@@ -24,17 +24,20 @@ import java.util.List;
 import java.util.Locale;
 
 public class BudgetFragment extends Fragment {
-    private DatabaseHelper dbHelper;
-    private int userId;
-    private RecyclerView recyclerView;
-    private BudgetAdapter adapter;
+    DatabaseHelper dbHelper;
+    int userId;
+    RecyclerView recyclerView;
+    BudgetAdapter adapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_budget, container, false);
 
         dbHelper = new DatabaseHelper(getContext());
-        userId = getActivity().getIntent().getExtras().getInt("USER_ID", 0);
+        // Lấy user_id từ Bundle
+        if (getArguments() != null) {
+            userId = getArguments().getInt("USER_ID", 0);
+        }
 
         recyclerView = view.findViewById(R.id.rv_budgets);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

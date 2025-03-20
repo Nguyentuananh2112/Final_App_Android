@@ -34,7 +34,10 @@ public class ExpensesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_expenses, container, false);
 
         dbHelper = new DatabaseHelper(getContext());
-        userId = getActivity().getIntent().getExtras().getInt("USER_ID", 0);
+        // Lấy user_id từ Bundle
+        if (getArguments() != null) {
+            userId = getArguments().getInt("USER_ID", 0);
+        }
 
         recyclerView = view.findViewById(R.id.rv_expenses);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
