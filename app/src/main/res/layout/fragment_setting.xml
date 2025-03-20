@@ -27,14 +27,19 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+
+                <!--Headline5 là chỉnh lại kích thước chữ, headline càng nhỏ thì chữ càng to-->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="User Profile"
-                    android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+                    android:textStyle="bold"
+                    android:layout_gravity="center_horizontal"
                     android:textColor="?attr/colorPrimary"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
                     android:layout_marginBottom="16dp" />
 
+                <!--MaterialComponents.Body1: chỉnh lại kích thước chữ, body càng nhỏ thì chữ càng to-->
                 <TextView
                     android:id="@+id/tv_username"
                     android:layout_width="wrap_content"

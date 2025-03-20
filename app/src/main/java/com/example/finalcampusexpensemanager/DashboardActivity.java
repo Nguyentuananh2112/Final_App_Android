@@ -1,9 +1,12 @@
 package com.example.finalcampusexpensemanager;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -52,18 +55,46 @@ public class DashboardActivity
         navigationView.setNavigationItemSelectedListener(this);
         setupViewPager();
 
-        // Xu ly logout
+
+
+
+        // xu ly logout
         Menu menu = navigationView.getMenu();
         MenuItem itemLogout = menu.findItem(R.id.nav_logout);
         itemLogout.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
-            public boolean onMenuItemClick(@NonNull MenuItem item) {
-                Intent intent = new Intent(DashboardActivity.this, SignInActivity.class);
-                startActivity(intent);
-                finish();
+            public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
+                // tao thong bao co chac muon logout
+                new AlertDialog.Builder(DashboardActivity.this)
+                        .setTitle("Logout") // DAY LA TIEU DE
+                        .setMessage("Are you sure wanna logout")// dua ra thong bao co muon logout
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int which) { // int which xác định nút nào được nhấn trong thong bao
+                                // nhan ok thi se dang xuat
+                                Toast.makeText(DashboardActivity.this, " Logout Successfully", Toast.LENGTH_SHORT).show();
+                                // chuyen ve man hinh login
+                                Intent intent = new Intent(DashboardActivity.this, SignInActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) { // int which xác định nút nào được nhấn trong thong bao
+                                // nhan cancel de huy
+                                dialog.dismiss();
+                            }
+                        })
+                        .show();
+
                 return true;
             }
         });
+
+
+
+
 
         // Xử lý click vào tab bottom
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
