@@ -112,8 +112,10 @@ public class DashboardActivity
                     viewPager2.setCurrentItem(1);
                 } else if (item.getItemId() == R.id.budget) {
                     viewPager2.setCurrentItem(2);
-                } else if (item.getItemId() == R.id.menu_setting) {
+                } else if (item.getItemId() == R.id.report) {
                     viewPager2.setCurrentItem(3);
+                } else if (item.getItemId() == R.id.menu_setting) {
+                    viewPager2.setCurrentItem(4);
                 }else {
                     viewPager2.setCurrentItem(0);
                 }
@@ -137,6 +139,8 @@ public class DashboardActivity
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
+                MenuItem item = null;
+
                 if (position == 0){
                     bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
                 }else if (position ==1){
@@ -144,6 +148,8 @@ public class DashboardActivity
                 } else if (position == 2) {
                     bottomNavigationView.getMenu().findItem(R.id.budget).setChecked(true);
                 } else if (position == 3) {
+                    bottomNavigationView.getMenu().findItem(R.id.report).setChecked(true);
+                } else if (position == 4) {
                     bottomNavigationView.getMenu().findItem(R.id.menu_setting).setChecked(true);
                 } else {
                     bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
@@ -166,8 +172,10 @@ public class DashboardActivity
             viewPager2.setCurrentItem(1);
         } else if (item.getItemId() == R.id.budget) {
             viewPager2.setCurrentItem(2);
-        } else if (item.getItemId() == R.id.menu_setting) {
+        } else if (item.getItemId() == R.id.report) {
             viewPager2.setCurrentItem(3);
+        } else if (item.getItemId() == R.id.menu_setting) {
+            viewPager2.setCurrentItem(4);
         }else {
             viewPager2.setCurrentItem(0);
         }

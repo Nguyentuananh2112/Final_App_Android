@@ -11,6 +11,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import com.example.finalcampusexpensemanager.fragment.BudgetFragment;
 import com.example.finalcampusexpensemanager.fragment.ExpensesFragment;
 import com.example.finalcampusexpensemanager.fragment.HomeFragment;
+import com.example.finalcampusexpensemanager.fragment.ReportFragment;
 import com.example.finalcampusexpensemanager.fragment.SettingFragment;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
@@ -43,6 +44,10 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 budgetFragment.setArguments(bundle);
                 return budgetFragment;
             case 3:
+                ReportFragment reportFragment = new ReportFragment();
+                reportFragment.setArguments(bundle);
+                return reportFragment;
+            case 4:
                 SettingFragment settingFragment = new SettingFragment();
                 settingFragment.setArguments(bundle);
                 return settingFragment;
@@ -55,6 +60,6 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 4;
+        return 5;
     }
 }
