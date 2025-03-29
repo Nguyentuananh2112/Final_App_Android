@@ -27,7 +27,10 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         dbHelper = new DatabaseHelper(getContext());
-        userId = getActivity().getIntent().getExtras().getInt("USER_ID", 0);
+        // Lấy user_id từ Bundle
+        if (getArguments() != null) {
+            userId = getArguments().getInt("USER_ID", 0);
+        }
 
 //        TextView tvTotalExpenses = view.findViewById(R.id.tv_total_expenses);
 //        TextView tvTotalBudget = view.findViewById(R.id.tv_total_budget);

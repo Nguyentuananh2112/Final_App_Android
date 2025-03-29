@@ -31,6 +31,7 @@ public class ExpensesFragment extends Fragment implements OnCategoryAddedListene
     private TabLayout tabLayout;
     private MaterialButton dateInput, saveButton, addCategoryButton;
     private TextInputEditText noteInput, amountInput;
+    private int userId;
     private Spinner categorySpinner;
     private MaterialTextView amountLabel, categoryLabel;
     private String selectedCategory = "";
@@ -65,7 +66,14 @@ public class ExpensesFragment extends Fragment implements OnCategoryAddedListene
 
         // Initialize database and category list
         dbHelper = new DatabaseHelper(getContext());
+
         categories = new ArrayList<>();
+
+        // Lấy user_id từ Bundle
+        if (getArguments() != null) {
+            userId = getArguments().getInt("USER_ID", 0);
+        }
+
 
         // Setup Spinner
         setupCategorySpinner();

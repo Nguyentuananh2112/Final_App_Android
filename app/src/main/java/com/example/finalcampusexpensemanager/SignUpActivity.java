@@ -1,5 +1,8 @@
 package com.example.finalcampusexpensemanager;
 
+import static com.example.finalcampusexpensemanager.utils.HashUtil.hashPassword;
+import com.example.finalcampusexpensemanager.utils.HashUtil;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,12 +15,15 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.finalcampusexpensemanager.db.DatabaseHelper;
 import com.example.finalcampusexpensemanager.db.UserDb;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -25,17 +31,54 @@ public class SignUpActivity extends AppCompatActivity {
     Button btnRegister, btnCancel;
     UserDb userDb;
 
+    DatabaseHelper dbHelper;
+
+    private boolean isStrongPassword(String password) {
+        return password.length() >= 8 &&
+                password.matches(".*[a-z].*") && // it nhat 1 chu cai thuong
+                password.matches(".*[A-Z].*") && // it nhat 1 chu cai in hoa
+                password.matches(".*\\d.*") && // it nhat 1 so
+                password.matches(".*[!@#$%^&*()].*"); // it nhat 1 ky tu dac biet
+    }
+
+//    private String hashPassword(String password) {
+//        try {
+//            // Khởi tạo thuật toán SHA-256
+//            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+//
+//            // Mã hóa mật khẩu thành chuỗi byte
+//            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+//
+//            // Chuyển đổi mảng byte thành chuỗi Hex (dễ lưu trữ)
+//            StringBuilder hexString = new StringBuilder();
+//            for (byte b : hash) {
+//                hexString.append(String.format("%02x", b)); // Chuyển mỗi byte thành 2 ký tự Hex
+//            }
+//
+//            // Trả về chuỗi đã mã hóa
+//            return hexString.toString();
+//        } catch (NoSuchAlgorithmException e) {
+//            throw new RuntimeException("Error hashing password", e);
+//        }
+//    }
+
+
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-        userDb = new UserDb(SignUpActivity.this);
+
+        dbHelper = new DatabaseHelper(this);
+//        userDb = new UserDb(SignUpActivity.this);
         edtUsername = findViewById(R.id.edtUsername);
         edtPassword = findViewById(R.id.edtPassword);
         edtEmail = findViewById(R.id.edtEmail);
         edtPhone = findViewById(R.id.edtPhone);
         btnRegister = findViewById(R.id.btnRegister);
         btnCancel = findViewById(R.id.btnCancel);
+
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -62,9 +105,21 @@ public class SignUpActivity extends AppCompatActivity {
                     edtPassword.setError("Password not empty");
                     return;
                 }
+                // Kiem tra do manh cua password, neu password hop le thi moi cho nhap email
+                if (!isStrongPassword(password)){
+                    edtPassword.setError("Password must have at least 8 characters, " +
+                            "including uppercase, lowercase, number, and special character");
+                    return;
+                }
+
                 String email = edtEmail.getText().toString().trim();
                 if (TextUtils.isEmpty(email)){
                     edtEmail.setError("Email not empty");
+                    return;
+                }
+                // email phai co '@'
+                if (!email.contains("@")){
+                    edtEmail.setError("Must have '@' character");
                     return;
                 }
                 String phoneNumber = edtPhone.getText().toString().trim();
@@ -72,15 +127,27 @@ public class SignUpActivity extends AppCompatActivity {
                     edtPhone.setError("Phone not empty");
                     return;
                 }
+                // check phone co 10 chu so hay k
+                if (phoneNumber.length() != 10){
+                    edtPhone.setError("Phone must be 10 digits");
+                    return;
+                }
+
+                // ma hoa password truoc khi luu vao db
+                String hashedPassword = hashPassword(password);
+
+
+
 
                 // check tk da dky hay ch
-                boolean checkUsername = userDb.checkUsernameExists(username);
+                boolean checkUsername = dbHelper.checkUsernameExists(username);
                 if (checkUsername){
                     edtUsername.setError("Username Already Exists");
                     return;
                 }
 
-                long insertUser = userDb.insertUserToDatabase(username, password, email, phoneNumber);
+                // Thêm user vào database với mật khẩu đã mã hóa
+                long insertUser = dbHelper.insertUserToDatabase(username, hashedPassword, email, phoneNumber);
                 if (insertUser == -1){
                     // Fail
                     Toast.makeText(SignUpActivity.this, "Error: Register Account Fail", Toast.LENGTH_SHORT).show();
@@ -90,6 +157,7 @@ public class SignUpActivity extends AppCompatActivity {
                     // return login page
                     Intent intent = new Intent(SignUpActivity.this, SignInActivity.class);
                     startActivity(intent);
+                    finish();
 
                 }
             }

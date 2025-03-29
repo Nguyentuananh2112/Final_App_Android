@@ -15,24 +15,27 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.finalcampusexpensemanager.db.DatabaseHelper;
 import com.example.finalcampusexpensemanager.db.UserDb;
 import com.example.finalcampusexpensemanager.model.UserModel;
+import com.example.finalcampusexpensemanager.utils.HashUtil;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.io.FileInputStream;
 
 public class SignInActivity extends AppCompatActivity {
+    DatabaseHelper dbHelper;
     TextInputEditText editUserName, editPassword;
-    TextView tvSignUp;
+    TextView tvSignUp, tvForgetPassword;
     Button btnLogin;
     UserDb userDb;
-    TextView tvForgetPassword;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
 
+        dbHelper = new DatabaseHelper(this);
 
-        userDb = new UserDb(SignInActivity.this);
+//        userDb = new UserDb(SignInActivity.this);
         tvForgetPassword = findViewById(R.id.tvForgetpassword);
         tvSignUp = findViewById(R.id.tvSignUpAccount);
         editUserName = findViewById(R.id.editTextUsername);
@@ -75,9 +78,16 @@ public class SignInActivity extends AppCompatActivity {
                     editPassword.setError("Password not empty");
                     return;
                 }
-                UserModel userData = userDb.getInfoUser(user, password, 0);
-                assert userData != null;
-                if (userData.getUsername() != null){
+                // Băm mật khẩu trước khi kiểm tra trong database
+                String hashedPassword = HashUtil.hashPassword(password);
+
+                // Lấy thông tin user từ database (so sánh với mật khẩu băm)
+                UserModel userData = dbHelper.getInfoUser(user, hashedPassword, 0);
+
+
+
+//                assert userData != null;
+                if (userData.getId() > 0) { // Kiểm tra xem user có tồn tại không
                     //login success
                     Intent intent = new Intent(SignInActivity.this, DashboardActivity.class);
                     Bundle bundle = new Bundle();

@@ -1,9 +1,12 @@
 package com.example.finalcampusexpensemanager;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +30,7 @@ public class DashboardActivity
     DrawerLayout drawerLayout;
     Toolbar toolbar;
     ViewPager2 viewPager2;
+    int userId;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,20 +54,53 @@ public class DashboardActivity
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+        // Lấy user_id từ Intent
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            userId = bundle.getInt("USER_ID", 0);
+        }
         setupViewPager();
 
-        // Xu ly logout
+
+
+
+        // xu ly logout
         Menu menu = navigationView.getMenu();
         MenuItem itemLogout = menu.findItem(R.id.nav_logout);
         itemLogout.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
-            public boolean onMenuItemClick(@NonNull MenuItem item) {
-                Intent intent = new Intent(DashboardActivity.this, SignInActivity.class);
-                startActivity(intent);
-                finish();
+            public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
+                // tao thong bao co chac muon logout
+                new AlertDialog.Builder(DashboardActivity.this)
+                        .setTitle("Logout") // DAY LA TIEU DE
+                        .setMessage("Are you sure wanna logout")// dua ra thong bao co muon logout
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int which) { // int which xác định nút nào được nhấn trong thong bao
+                                // nhan ok thi se dang xuat
+                                Toast.makeText(DashboardActivity.this, " Logout Successfully", Toast.LENGTH_SHORT).show();
+                                // chuyen ve man hinh login
+                                Intent intent = new Intent(DashboardActivity.this, SignInActivity.class);
+                                startActivity(intent);
+                                finish();
+                            }
+                        })
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) { // int which xác định nút nào được nhấn trong thong bao
+                                // nhan cancel de huy
+                                dialog.dismiss();
+                            }
+                        })
+                        .show();
+
                 return true;
             }
         });
+
+
+
+
 
         // Xử lý click vào tab bottom
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
@@ -75,8 +112,10 @@ public class DashboardActivity
                     viewPager2.setCurrentItem(1);
                 } else if (item.getItemId() == R.id.menu_category) {
                     viewPager2.setCurrentItem(2);
-                } else if (item.getItemId() == R.id.menu_setting) {
+                } else if (item.getItemId() == R.id.budget) {
                     viewPager2.setCurrentItem(3);
+                } else if (item.getItemId() == R.id.menu_setting) {
+                    viewPager2.setCurrentItem(4);
                 }else {
                     viewPager2.setCurrentItem(0);
                 }
@@ -89,6 +128,7 @@ public class DashboardActivity
 
     private void setupViewPager(){
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
+        viewPagerAdapter.setUserId(userId); // Truyền user_id cho Adapter
         viewPager2.setAdapter(viewPagerAdapter);
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
@@ -99,6 +139,8 @@ public class DashboardActivity
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
+                MenuItem item = null;
+
                 if (position == 0){
                     bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
                 }else if (position ==1){
@@ -106,6 +148,8 @@ public class DashboardActivity
                 } else if (position == 2) {
                     bottomNavigationView.getMenu().findItem(R.id.menu_category).setChecked(true);
                 } else if (position == 3) {
+                    bottomNavigationView.getMenu().findItem(R.id.budget).setChecked(true);
+                } else if (position == 4) {
                     bottomNavigationView.getMenu().findItem(R.id.menu_setting).setChecked(true);
                 } else {
                     bottomNavigationView.getMenu().findItem(R.id.menu_home).setChecked(true);
@@ -128,8 +172,10 @@ public class DashboardActivity
             viewPager2.setCurrentItem(1);
         } else if (item.getItemId() == R.id.menu_category) {
             viewPager2.setCurrentItem(2);
-        } else if (item.getItemId() == R.id.menu_setting) {
+        } else if (item.getItemId() == R.id.budget) {
             viewPager2.setCurrentItem(3);
+        } else if (item.getItemId() == R.id.menu_setting) {
+            viewPager2.setCurrentItem(4);
         }else {
             viewPager2.setCurrentItem(0);
         }
