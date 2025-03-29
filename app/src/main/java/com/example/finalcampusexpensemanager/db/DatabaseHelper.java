@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -14,6 +15,7 @@ import com.example.finalcampusexpensemanager.model.CategoryModel;
 import com.example.finalcampusexpensemanager.model.ExpenseModel;
 import com.example.finalcampusexpensemanager.model.UserModel;
 
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -219,15 +221,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         String dateNow = sdf.format(new Date());
 
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(CATEGORIES_NAME, name);
-        values.put(CATEGORIES_DESCRIPTION, description);
-        values.put(CATEGORIES_CREATED_AT, dateNow);
-        long insert = db.insert(TABLE_CATEGORIES, null, values);
-        db.close();
-        return insert;
+        SQLiteDatabase db = null;
+        try {
+            db = this.getWritableDatabase();
+            if (!db.isOpen()) {
+                throw new IllegalStateException("Database is not open");
+            }
+
+            ContentValues values = new ContentValues();
+            values.put(CATEGORIES_NAME, name);
+            values.put(CATEGORIES_DESCRIPTION, description);
+            values.put(CATEGORIES_CREATED_AT, dateNow);
+
+            long insert = db.insert(TABLE_CATEGORIES, null, values);
+            if (insert == -1) {
+                throw new SQLException("Failed to insert category into " + TABLE_CATEGORIES);
+            }
+            return insert;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error inserting category: " + e.getMessage());
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close();
+            }
+        }
     }
+
 
     @SuppressLint("Range")
     public List<CategoryModel> getAllCategories() {
@@ -246,6 +266,71 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         db.close();
         return categories;
+    }
+
+    // Cập nhật danh mục
+    public int updateCategory(int id, String name, String description) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(CATEGORIES_NAME, name);
+        values.put(CATEGORIES_DESCRIPTION, description);
+        values.put(CATEGORIES_UPDATED_AT, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
+
+        int result = db.update(TABLE_CATEGORIES, values, CATEGORIES_ID + " = ?", new String[]{String.valueOf(id)});
+        db.close();
+        return result;
+    }
+    public boolean isCategoryExists(String categoryName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            String query = "SELECT COUNT(*) FROM " + TABLE_CATEGORIES +
+                    " WHERE " + CATEGORIES_NAME + " = ? COLLATE NOCASE";
+            cursor = db.rawQuery(query, new String[]{categoryName});
+            if (cursor.moveToFirst()) {
+                return cursor.getInt(0) > 0;
+            }
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+            db.close();
+        }
+    }
+
+    // Xóa danh mục
+    public int deleteCategory(int id) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int result = db.delete(TABLE_CATEGORIES, CATEGORIES_ID + " = ?", new String[]{String.valueOf(id)});
+        db.close();
+        return result;
+    }
+    public void printAllCategories() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CATEGORIES, null);
+
+        if (cursor.getCount() == 0) {
+            Log.d("Database", "No categories found in the database");
+        } else {
+            Log.d("Database", "Total categories: " + cursor.getCount());
+            while (cursor.moveToNext()) {
+                @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex(CATEGORIES_ID));
+                @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex(CATEGORIES_NAME));
+                @SuppressLint("Range") String description = cursor.getString(cursor.getColumnIndex(CATEGORIES_DESCRIPTION));
+                @SuppressLint("Range") String createdAt = cursor.getString(cursor.getColumnIndex(CATEGORIES_CREATED_AT));
+                @SuppressLint("Range") String updatedAt = cursor.getString(cursor.getColumnIndex(CATEGORIES_UPDATED_AT));
+
+                Log.d("Database", "ID: " + id + ", Name: " + name + ", Description: " + description +
+                        ", Created At: " + createdAt + ", Updated At: " + updatedAt);
+            }
+        }
+
+        cursor.close();
+        db.close();
     }
 
     // Phương thức cho expenses

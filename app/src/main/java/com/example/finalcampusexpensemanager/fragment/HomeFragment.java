@@ -29,8 +29,8 @@ public class HomeFragment extends Fragment {
         dbHelper = new DatabaseHelper(getContext());
         userId = getActivity().getIntent().getExtras().getInt("USER_ID", 0);
 
-        TextView tvTotalExpenses = view.findViewById(R.id.tv_total_expenses);
-        TextView tvTotalBudget = view.findViewById(R.id.tv_total_budget);
+//        TextView tvTotalExpenses = view.findViewById(R.id.tv_total_expenses);
+//        TextView tvTotalBudget = view.findViewById(R.id.tv_total_budget);
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM", Locale.getDefault());
         String currentMonth = sdf.format(Calendar.getInstance().getTime());
@@ -52,8 +52,8 @@ public class HomeFragment extends Fragment {
             }
         }
 
-        tvTotalExpenses.setText("Total Expenses: $" + (totalExpenses / 100.0));
-        tvTotalBudget.setText("Total Budget: $" + (totalBudget / 100.0));
+//        tvTotalExpenses.setText("Total Expenses: $" + (totalExpenses / 100.0));
+//        tvTotalBudget.setText("Total Budget: $" + (totalBudget / 100.0));
 
         return view;
     }

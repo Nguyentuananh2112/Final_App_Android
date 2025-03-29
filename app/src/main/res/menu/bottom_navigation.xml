@@ -9,9 +9,10 @@
         android:id="@+id/menu_expense"
         android:title="Expenses"
         android:icon="@drawable/paid"/>
+
     <item
-        android:id="@+id/budget"
-        android:title="Budget"
+        android:id="@+id/menu_category"
+        android:title="Category"
         android:icon="@drawable/budget"
 
         />

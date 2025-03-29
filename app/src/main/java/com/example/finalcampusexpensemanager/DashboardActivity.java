@@ -73,7 +73,7 @@ public class DashboardActivity
                     viewPager2.setCurrentItem(0);
                 } else if (item.getItemId() == R.id.menu_expense) {
                     viewPager2.setCurrentItem(1);
-                } else if (item.getItemId() == R.id.budget) {
+                } else if (item.getItemId() == R.id.menu_category) {
                     viewPager2.setCurrentItem(2);
                 } else if (item.getItemId() == R.id.menu_setting) {
                     viewPager2.setCurrentItem(3);
@@ -104,7 +104,7 @@ public class DashboardActivity
                 }else if (position ==1){
                     bottomNavigationView.getMenu().findItem(R.id.menu_expense).setChecked(true);
                 } else if (position == 2) {
-                    bottomNavigationView.getMenu().findItem(R.id.budget).setChecked(true);
+                    bottomNavigationView.getMenu().findItem(R.id.menu_category).setChecked(true);
                 } else if (position == 3) {
                     bottomNavigationView.getMenu().findItem(R.id.menu_setting).setChecked(true);
                 } else {
@@ -126,7 +126,7 @@ public class DashboardActivity
             viewPager2.setCurrentItem(0);
         }else if (item.getItemId() == R.id.menu_expense) {
             viewPager2.setCurrentItem(1);
-        } else if (item.getItemId() == R.id.budget) {
+        } else if (item.getItemId() == R.id.menu_category) {
             viewPager2.setCurrentItem(2);
         } else if (item.getItemId() == R.id.menu_setting) {
             viewPager2.setCurrentItem(3);

@@ -1,5 +1,6 @@
 package com.example.finalcampusexpensemanager.model;
 
+
 public class ExpenseModel {
     private int id;
     private int userId;
@@ -11,7 +12,15 @@ public class ExpenseModel {
     private String recurrenceInterval;
     private String startDate;
     private String endDate;
+    private String type;        // Thêm thuộc tính type
+    private String createdAt;   // Thêm thuộc tính createdAt
+    private String updatedAt;   // Thêm thuộc tính updatedAt
 
+    // Constructor rỗng
+    public ExpenseModel() {
+    }
+
+    // Getter và Setter cho các thuộc tính hiện có
     public int getId() {
         return id;
     }
@@ -36,20 +45,20 @@ public class ExpenseModel {
         this.categoryId = categoryId;
     }
 
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
     public int getAmount() {
@@ -90,5 +99,30 @@ public class ExpenseModel {
 
     public void setEndDate(String endDate) {
         this.endDate = endDate;
+    }
+
+    // Getter và Setter cho các thuộc tính mới
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
