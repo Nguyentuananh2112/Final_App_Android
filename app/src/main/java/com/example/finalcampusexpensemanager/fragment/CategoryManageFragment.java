@@ -96,4 +96,10 @@ public class CategoryManageFragment extends Fragment implements CategoryAdapter.
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadCategories();
+    }
+
 }

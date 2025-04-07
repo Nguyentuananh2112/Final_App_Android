@@ -16,14 +16,13 @@ import com.example.finalcampusexpensemanager.R;
 import com.example.finalcampusexpensemanager.db.DatabaseHelper;
 import com.example.finalcampusexpensemanager.model.CategoryModel;
 import com.example.finalcampusexpensemanager.model.ExpenseModel;
-import com.example.finalcampusexpensemanager.utils.ReloadableFragment;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class HomeFragment extends Fragment implements ReloadableFragment {
+public class HomeFragment extends Fragment {
     private TextView totalBalance, incomeAmount, expenseAmount;
     private MaterialButton dateInput;
     private RecyclerView transactionRecyclerView;
@@ -111,7 +110,8 @@ public class HomeFragment extends Fragment implements ReloadableFragment {
     }
 
     @Override
-    public void loadData() {
+    public void onResume() {
+        super.onResume();
         loadTransactions();
     }
 
