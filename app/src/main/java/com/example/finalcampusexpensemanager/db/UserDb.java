@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 public class UserDb extends SQLiteOpenHelper {
     public static final String DB_NAME = "campus_expenses";
     public static final String DB_TABLE = "users";
-    public static final int DB_VERSION = 4;
+    public static final int DB_VERSION = 5;
 
     // dinh nghia cac cot trong table
     public static final String ID_COL = "id";
