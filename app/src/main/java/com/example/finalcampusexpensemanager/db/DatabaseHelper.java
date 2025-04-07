@@ -24,7 +24,7 @@ import java.util.Locale;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DB_NAME = "campus_expenses";
-    public static final int DB_VERSION = 4;
+    public static final int DB_VERSION = 5;
 
     // Bảng users
     public static final String TABLE_USERS = "users";
@@ -58,6 +58,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String EXPENSES_RECURRENCE_INTERVAL = "recurrence_interval";
     public static final String EXPENSES_START_DATE = "start_date";
     public static final String EXPENSES_END_DATE = "end_date";
+    public static final String EXPENSES_TYPE = "type"; // Thêm cột type
     public static final String EXPENSES_CREATED_AT = "created_at";
     public static final String EXPENSES_UPDATED_AT = "updated_at";
 
@@ -108,6 +109,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + EXPENSES_RECURRENCE_INTERVAL + " TEXT, "
                 + EXPENSES_START_DATE + " TEXT, "
                 + EXPENSES_END_DATE + " TEXT, "
+                + EXPENSES_TYPE + " TEXT NOT NULL, " // Thêm cột type
                 + EXPENSES_CREATED_AT + " TEXT, "
                 + EXPENSES_UPDATED_AT + " TEXT, "
                 + "FOREIGN KEY (" + EXPENSES_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + USERS_ID + "), "
@@ -129,6 +131,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (oldVersion < 5) {
+            // Thêm cột type vào bảng expenses nếu version cũ hơn 5
+            db.execSQL("ALTER TABLE " + TABLE_EXPENSES + " ADD COLUMN " + EXPENSES_TYPE + " TEXT NOT NULL DEFAULT 'Expense'");
+        }
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATEGORIES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_EXPENSES);
@@ -138,6 +144,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    // Insert Expense với type
+    public long insertExpense(int userId, int categoryId, String description, String date, int amount, boolean isRecurring, String recurrenceInterval, String startDate, String endDate, String type) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        String dateNow = sdf.format(new Date());
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(EXPENSES_USER_ID, userId);
+        values.put(EXPENSES_CATEGORY_ID, categoryId);
+        values.put(EXPENSES_DESCRIPTION, description);
+        values.put(EXPENSES_DATE, date);
+        values.put(EXPENSES_AMOUNT, amount);
+        values.put(EXPENSES_IS_RECURRING, isRecurring ? 1 : 0);
+        values.put(EXPENSES_RECURRENCE_INTERVAL, recurrenceInterval);
+        values.put(EXPENSES_START_DATE, startDate);
+        values.put(EXPENSES_END_DATE, endDate);
+        values.put(EXPENSES_TYPE, type); // Thêm type
+        values.put(EXPENSES_CREATED_AT, dateNow);
+        long insert = db.insert(TABLE_EXPENSES, null, values);
+        db.close();
+        return insert;
+    }
 
 
     // Phương thức từ UserDb
@@ -374,6 +402,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 expense.setRecurrenceInterval(cursor.getString(cursor.getColumnIndex(EXPENSES_RECURRENCE_INTERVAL)));
                 expense.setStartDate(cursor.getString(cursor.getColumnIndex(EXPENSES_START_DATE)));
                 expense.setEndDate(cursor.getString(cursor.getColumnIndex(EXPENSES_END_DATE)));
+                expense.setType(cursor.getString(cursor.getColumnIndex(EXPENSES_TYPE))); // Lấy type
+                expense.setCreatedAt(cursor.getString(cursor.getColumnIndex(EXPENSES_CREATED_AT)));
+                expense.setUpdatedAt(cursor.getString(cursor.getColumnIndex(EXPENSES_UPDATED_AT)));
                 expenses.add(expense);
             } while (cursor.moveToNext());
         }

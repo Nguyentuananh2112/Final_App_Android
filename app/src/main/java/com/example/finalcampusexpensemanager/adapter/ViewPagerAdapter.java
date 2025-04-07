@@ -12,12 +12,11 @@ import com.example.finalcampusexpensemanager.fragment.BudgetFragment;
 import com.example.finalcampusexpensemanager.fragment.CategoryManageFragment;
 import com.example.finalcampusexpensemanager.fragment.ExpensesFragment;
 import com.example.finalcampusexpensemanager.fragment.HomeFragment;
-import com.example.finalcampusexpensemanager.fragment.ReportFragment;
 import com.example.finalcampusexpensemanager.fragment.SettingFragment;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
+    private int userId;
 
-    int userId;
     public ViewPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
         super(fragmentManager, lifecycle);
     }
@@ -25,21 +24,10 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
     public void setUserId(int userId) {
         this.userId = userId;
     }
+
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-
-//        if (position == 0){
-//            return new HomeFragment();
-//        } else if (position == 1) {
-//            return new ExpensesFragment();
-//        } else if (position == 2) {
-//            return new CategoryManageFragment();
-//        } else if (position == 3) {
-//            return  new SettingFragment();
-//        } else {
-//            return new HomeFragment();
-
         Bundle bundle = new Bundle();
         bundle.putInt("USER_ID", userId);
 
@@ -56,7 +44,6 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 CategoryManageFragment categoryManageFragment = new CategoryManageFragment();
                 categoryManageFragment.setArguments(bundle);
                 return categoryManageFragment;
-
             case 3:
                 BudgetFragment budgetFragment = new BudgetFragment();
                 budgetFragment.setArguments(bundle);
@@ -69,7 +56,6 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
                 HomeFragment defaultFragment = new HomeFragment();
                 defaultFragment.setArguments(bundle);
                 return defaultFragment;
-
         }
     }
 
