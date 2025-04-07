@@ -41,3 +41,7 @@ dependencies {
     implementation libs.material.v1100
     implementation libs.material.v1110
 }
+dependencies {
+    // Use iText 5 for PDF generation
+    implementation 'com.itextpdf:itextpdf:5.5.13.3'
+}

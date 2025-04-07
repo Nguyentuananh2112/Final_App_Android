@@ -451,4 +451,49 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return budgets;
     }
+    //report
+    @SuppressLint("Range")
+    public List<ExpenseModel> getExpensesByUserAndDateRange(int userId, String startDate, String endDate) {
+        List<ExpenseModel> expenses = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_EXPENSES + " WHERE " + EXPENSES_USER_ID + " = ? AND " +
+                EXPENSES_DATE + " BETWEEN ? AND ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId), startDate, endDate});
+        if (cursor.moveToFirst()) {
+            do {
+                ExpenseModel expense = new ExpenseModel();
+                expense.setId(cursor.getInt(cursor.getColumnIndex(EXPENSES_ID)));
+                expense.setUserId(cursor.getInt(cursor.getColumnIndex(EXPENSES_USER_ID)));
+                expense.setCategoryId(cursor.getInt(cursor.getColumnIndex(EXPENSES_CATEGORY_ID)));
+                expense.setDescription(cursor.getString(cursor.getColumnIndex(EXPENSES_DESCRIPTION)));
+                expense.setDate(cursor.getString(cursor.getColumnIndex(EXPENSES_DATE)));
+                expense.setAmount(cursor.getInt(cursor.getColumnIndex(EXPENSES_AMOUNT)));
+                expense.setRecurring(cursor.getInt(cursor.getColumnIndex(EXPENSES_IS_RECURRING)) == 1);
+                expense.setRecurrenceInterval(cursor.getString(cursor.getColumnIndex(EXPENSES_RECURRENCE_INTERVAL)));
+                expense.setStartDate(cursor.getString(cursor.getColumnIndex(EXPENSES_START_DATE)));
+                expense.setEndDate(cursor.getString(cursor.getColumnIndex(EXPENSES_END_DATE)));
+                expense.setType(cursor.getString(cursor.getColumnIndex(EXPENSES_TYPE)));
+                expense.setCreatedAt(cursor.getString(cursor.getColumnIndex(EXPENSES_CREATED_AT)));
+                expense.setUpdatedAt(cursor.getString(cursor.getColumnIndex(EXPENSES_UPDATED_AT)));
+                expenses.add(expense);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        db.close();
+        return expenses;
+    }
+
+    @SuppressLint("Range")
+    public String getCategoryName(int categoryId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + CATEGORIES_NAME + " FROM " + TABLE_CATEGORIES + " WHERE " + CATEGORIES_ID + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(categoryId)});
+        String name = "Unknown";
+        if (cursor.moveToFirst()) {
+            name = cursor.getString(cursor.getColumnIndex(CATEGORIES_NAME));
+        }
+        cursor.close();
+        db.close();
+        return name;
+    }
 }
