@@ -24,7 +24,7 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
     private TextView totalBalance, incomeAmount, expenseAmount;
-    private MaterialButton dateInput;
+//    private MaterialButton dateInput;
     private RecyclerView transactionRecyclerView;
     private TransactionAdapter transactionAdapter;
     private List<ExpenseModel> transactionList;
@@ -40,7 +40,7 @@ public class HomeFragment extends Fragment {
         totalBalance = view.findViewById(R.id.total_balance);
         incomeAmount = view.findViewById(R.id.income_amount);
         expenseAmount = view.findViewById(R.id.expense_amount);
-        dateInput = view.findViewById(R.id.date_input);
+
         transactionRecyclerView = view.findViewById(R.id.transaction_recycler_view);
 
         dbHelper = new DatabaseHelper(getContext());
@@ -53,24 +53,24 @@ public class HomeFragment extends Fragment {
         transactionRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         transactionRecyclerView.setAdapter(transactionAdapter);
 
-        dateInput.setOnClickListener(v -> showDatePicker());
+//        dateInput.setOnClickListener(v -> showDatePicker());
 
         loadTransactions();
 
         return view;
     }
 
-    private void showDatePicker() {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-
-        new DatePickerDialog(getContext(), (view, selectedYear, selectedMonth, selectedDay) -> {
-            String selectedDate = String.format("%02d/%02d/%d", selectedMonth + 1, selectedDay, selectedYear);
-            dateInput.setText(selectedDate);
-        }, year, month, day).show();
-    }
+//    private void showDatePicker() {
+//        Calendar calendar = Calendar.getInstance();
+//        int year = calendar.get(Calendar.YEAR);
+//        int month = calendar.get(Calendar.MONTH);
+//        int day = calendar.get(Calendar.DAY_OF_MONTH);
+//
+//        new DatePickerDialog(getContext(), (view, selectedYear, selectedMonth, selectedDay) -> {
+//            String selectedDate = String.format("%02d/%02d/%d", selectedMonth + 1, selectedDay, selectedYear);
+//            dateInput.setText(selectedDate);
+//        }, year, month, day).show();
+//    }
 
     private void loadTransactions() {
         transactionList.clear();

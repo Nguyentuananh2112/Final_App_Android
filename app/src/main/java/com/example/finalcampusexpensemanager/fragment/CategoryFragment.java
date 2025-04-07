@@ -9,7 +9,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
+import com.example.finalcampusexpensemanager.OnCategoryChangeListener;
 import com.example.finalcampusexpensemanager.R;
 import com.example.finalcampusexpensemanager.db.DatabaseHelper;
 import com.example.finalcampusexpensemanager.model.CategoryModel;
@@ -23,14 +26,13 @@ public class CategoryFragment extends DialogFragment {
     private MaterialButton saveCategoryButton;
     private TextInputLayout categoryNameLayout, categoryDescriptionLayout;
     private DatabaseHelper dbHelper;
-    private OnCategoryAddedListener listener;
+    private OnCategoryChangeListener listener;
 
     public CategoryFragment() {
         // Required empty public constructor
     }
 
-    // Phương thức để nhận listener từ ExpensesFragment
-    public void setOnCategoryAddedListener(OnCategoryAddedListener listener) {
+    public void setOnCategoryChangeListener(OnCategoryChangeListener listener) {
         this.listener = listener;
     }
 
@@ -45,7 +47,6 @@ public class CategoryFragment extends DialogFragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_category, container, false);
 
-        // Initialize views with Material components
         categoryNameLayout = view.findViewById(R.id.category_name_layout);
         categoryNameInput = view.findViewById(R.id.category_name_input);
         categoryDescriptionLayout = view.findViewById(R.id.category_description_layout);
@@ -63,7 +64,6 @@ public class CategoryFragment extends DialogFragment {
         String name = categoryNameInput.getText().toString().trim();
         String description = categoryDescriptionInput.getText().toString().trim();
 
-        // Reset any previous errors
         categoryNameLayout.setError(null);
 
         if (name.isEmpty()) {
@@ -81,11 +81,16 @@ public class CategoryFragment extends DialogFragment {
             if (result != -1) {
                 Toast.makeText(requireContext(), "Category '" + name + "' saved successfully",
                         Toast.LENGTH_SHORT).show();
-                // Tạo CategoryModel mới và thông báo cho listener
                 CategoryModel newCategory = new CategoryModel((int) result, name, description, null, null);
+
+                // Thông báo qua listener nếu có
                 if (listener != null) {
                     listener.onCategoryAdded(newCategory);
                 }
+
+                // Thông báo cho ExpensesFragment
+                notifyExpensesFragmentOnAdded(newCategory);
+
                 resetForm();
                 dismiss();
             } else {
@@ -96,6 +101,14 @@ public class CategoryFragment extends DialogFragment {
             Toast.makeText(requireContext(), "Error: " + e.getMessage(),
                     Toast.LENGTH_LONG).show();
             e.printStackTrace();
+        }
+    }
+
+    private void notifyExpensesFragmentOnAdded(CategoryModel newCategory) {
+        FragmentManager fragmentManager = getParentFragmentManager();
+        Fragment expensesFragment = fragmentManager.findFragmentByTag("ExpensesFragment");
+        if (expensesFragment instanceof OnCategoryChangeListener) {
+            ((OnCategoryChangeListener) expensesFragment).onCategoryAdded(newCategory);
         }
     }
 
