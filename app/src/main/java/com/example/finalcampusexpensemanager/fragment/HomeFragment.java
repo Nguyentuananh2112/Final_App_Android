@@ -1,97 +1,170 @@
 package com.example.finalcampusexpensemanager.fragment;
 
+import android.app.DatePickerDialog;
+import android.content.Context;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.TextView;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.finalcampusexpensemanager.R;
-import com.example.finalcampusexpensemanager.adapter.ProductListAdapter;
-import com.example.finalcampusexpensemanager.model.ProductModel;
+import com.example.finalcampusexpensemanager.db.DatabaseHelper;
+import com.example.finalcampusexpensemanager.model.CategoryModel;
+import com.example.finalcampusexpensemanager.model.ExpenseModel;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link HomeFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class HomeFragment extends Fragment {
+    private TextView totalBalance, incomeAmount, expenseAmount;
+//    private MaterialButton dateInput;
+    private RecyclerView transactionRecyclerView;
+    private TransactionAdapter transactionAdapter;
+    private List<ExpenseModel> transactionList;
+    private DatabaseHelper dbHelper;
+    private int userId;
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public HomeFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(String param1, String param2) {
-        HomeFragment fragment = new HomeFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    public HomeFragment() {}
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-        ListView lvProduct = view.findViewById(R.id.lvProductList);
-        List<ProductModel> productModels = new ArrayList<>();
-        productModels.add(new ProductModel(1,"Iphone 16 Pro max",20000000,"https://cdn.tgdd.vn/Products/Images/1363/314738/mieng-dan-kinh-cuong-luc-iphone-15-pro-jcpal-thumb-600x600.jpg"));
-        productModels.add(new ProductModel(2,"Iphone 13 Pro max",40000000,"https://cdn.tgdd.vn/Products/Images/1363/314738/mieng-dan-kinh-cuong-luc-iphone-15-pro-jcpal-thumb-600x600.jpg"));
-        productModels.add(new ProductModel(3,"Iphone 18 Pro max",70000000,"https://cdn.tgdd.vn/Products/Images/1363/314738/mieng-dan-kinh-cuong-luc-iphone-15-pro-jcpal-thumb-600x600.jpg"));
-        productModels.add(new ProductModel(4,"Iphone 12 Pro max",40000000,"https://cdn.tgdd.vn/Products/Images/1363/314738/mieng-dan-kinh-cuong-luc-iphone-15-pro-jcpal-thumb-600x600.jpg"));
 
-        ProductListAdapter adapter = new ProductListAdapter(getContext(),productModels);
-        lvProduct.setAdapter(adapter);
+        totalBalance = view.findViewById(R.id.total_balance);
+        incomeAmount = view.findViewById(R.id.income_amount);
+        expenseAmount = view.findViewById(R.id.expense_amount);
 
-        lvProduct.setClickable(true);
-        lvProduct.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ProductModel pd = (ProductModel) lvProduct.getItemAtPosition(position);
-                String name = pd.getName();
-                int price = pd.getPrice();
-                Toast.makeText(getContext(), name + " - " + price, Toast.LENGTH_SHORT).show();
+        transactionRecyclerView = view.findViewById(R.id.transaction_recycler_view);
 
-            }
-        });
+        dbHelper = new DatabaseHelper(getContext());
+        if (getArguments() != null) {
+            userId = getArguments().getInt("USER_ID", 0);
+        }
+
+        transactionList = new ArrayList<>();
+        transactionAdapter = new TransactionAdapter(transactionList);
+        transactionRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        transactionRecyclerView.setAdapter(transactionAdapter);
+
+//        dateInput.setOnClickListener(v -> showDatePicker());
+
+        loadTransactions();
 
         return view;
     }
+
+//    private void showDatePicker() {
+//        Calendar calendar = Calendar.getInstance();
+//        int year = calendar.get(Calendar.YEAR);
+//        int month = calendar.get(Calendar.MONTH);
+//        int day = calendar.get(Calendar.DAY_OF_MONTH);
+//
+//        new DatePickerDialog(getContext(), (view, selectedYear, selectedMonth, selectedDay) -> {
+//            String selectedDate = String.format("%02d/%02d/%d", selectedMonth + 1, selectedDay, selectedYear);
+//            dateInput.setText(selectedDate);
+//        }, year, month, day).show();
+//    }
+
+    private void loadTransactions() {
+        transactionList.clear();
+        transactionList.addAll(dbHelper.getExpensesByUser(userId));
+        transactionAdapter.notifyDataSetChanged();
+        updateBalance();
+    }
+
+    private void updateBalance() {
+        int totalIncome = 0;
+        int totalExpense = 0;
+
+        for (ExpenseModel transaction : transactionList) {
+            if ("Income".equals(transaction.getType())) {
+                totalIncome += transaction.getAmount();
+            } else if ("Expense".equals(transaction.getType())) {
+                totalExpense += transaction.getAmount();
+            }
+        }
+
+        incomeAmount.setText("$" + totalIncome);
+        expenseAmount.setText("$" + totalExpense);
+        totalBalance.setText("$" + (totalIncome - totalExpense));
+    }
+
+    public void updateTransaction(String type, int amount, String date, String note, String category) {
+        loadTransactions(); // Tải lại từ SQLite để đảm bảo đồng bộ
+    }
+
+    private int getCategoryId(String categoryName) {
+        for (CategoryModel category : dbHelper.getAllCategories()) {
+            if (category.getName().equalsIgnoreCase(categoryName)) {
+                return category.getId();
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadTransactions();
+    }
+
+
+}
+
+class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.ViewHolder> {
+    private List<ExpenseModel> transactions;
+
+    public TransactionAdapter(List<ExpenseModel> transactions) {
+        this.transactions = transactions;
+    }
+
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(android.R.layout.simple_list_item_1, parent, false);
+        return new ViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(ViewHolder holder, int position) {
+        ExpenseModel transaction = transactions.get(position);
+        String categoryName = getCategoryName(holder.itemView.getContext(), transaction.getCategoryId());
+        String displayText = transaction.getType() + ": $" + transaction.getAmount() +
+                " | " + transaction.getDate() + " | " + categoryName +
+                " | " + (transaction.getDescription().isEmpty() ? "No note" : transaction.getDescription());
+        holder.textView.setText(displayText);
+    }
+
+    @Override
+    public int getItemCount() {
+        return transactions.size();
+    }
+
+    private String getCategoryName(Context context, int categoryId) {
+        DatabaseHelper dbHelper = new DatabaseHelper(context);
+        for (CategoryModel category : dbHelper.getAllCategories()) {
+            if (category.getId() == categoryId) {
+                return category.getName();
+            }
+        }
+        return "Unknown";
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView textView;
+
+        ViewHolder(View itemView) {
+            super(itemView);
+            textView = itemView.findViewById(android.R.id.text1);
+        }
+    }
+
+
 }

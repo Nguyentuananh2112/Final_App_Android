@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.finalcampusexpensemanager.db.UserDb;
+import com.example.finalcampusexpensemanager.utils.HashUtil;
 import com.google.android.material.textfield.TextInputEditText;
 
 public class UpdatePasswordActivity extends AppCompatActivity {
@@ -22,6 +23,14 @@ public class UpdatePasswordActivity extends AppCompatActivity {
     Bundle bundle;
     private int idUser = 0;
     UserDb userDb;
+
+    private boolean isStrongPassword(String password) {
+        return password.length() >= 8 &&
+                password.matches(".*[a-z].*") && // it nhat 1 chu cai thuong
+                password.matches(".*[A-Z].*") && // it nhat 1 chu cai in hoa
+                password.matches(".*\\d.*") && // it nhat 1 so
+                password.matches(".*[!@#$%^&*()].*"); // it nhat 1 ky tu dac biet
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -46,11 +55,19 @@ public class UpdatePasswordActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String password = edtNewPassword.getText().toString().trim();
+                String confirmPassword = edtConfirmNewPassword.getText().toString().trim();
+
                 if (TextUtils.isEmpty(password)){
                     edtNewPassword.setError("New password can not empty");
                     return;
                 }
-                String confirmPassword = edtConfirmNewPassword.getText().toString().trim();
+                // Kiem tra do manh cua password, neu password hop le thi moi cho nhap email
+                if (!isStrongPassword(password)){
+                    edtNewPassword.setError("Password must have at least 8 characters, " +
+                            "including uppercase, lowercase, number, and special character");
+                    return;
+                }
+
                 if (TextUtils.isEmpty(confirmPassword)){
                     edtNewPassword.setError("New confirm password can not empty");
                     return;
@@ -59,7 +76,10 @@ public class UpdatePasswordActivity extends AppCompatActivity {
                     edtNewPassword.setError("New confirm password is not same password");
                     return;
                 }
-                int update = userDb.updateAccountPassword(idUser, password);
+
+                // Băm mật khẩu trước khi lưu
+                String hashedPassword = HashUtil.hashPassword(password);
+                int update = userDb.updateAccountPassword(idUser, hashedPassword);// Sử dụng hashedPassword
 
                 if (update == -1){
                     // fail

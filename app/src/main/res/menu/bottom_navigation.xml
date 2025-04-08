@@ -4,19 +4,32 @@
     <item
         android:id="@+id/menu_home"
         android:title="Home"
-        android:icon="@drawable/home_page"/>
+        android:icon="@drawable/home4"/>
     <item
         android:id="@+id/menu_expense"
         android:title="Expenses"
+
         android:icon="@drawable/paid"/>
+
+    <item
+        android:id="@+id/menu_category"
+        android:title="Category"
+        android:icon="@drawable/budget"/>
+
     <item
         android:id="@+id/budget"
         android:title="Budget"
-        android:icon="@drawable/budget"
+        android:icon="@drawable/budget2"
 
         />
+<!--    <item-->
+<!--        android:id="@+id/report"-->
+<!--        android:title="Report"-->
+<!--        android:icon="@drawable/report"-->
+
+<!--        />-->
     <item
         android:id="@+id/menu_setting"
         android:title="Setting"
-        android:icon="@drawable/settings"/>
+        android:icon="@drawable/setting4"/>
 </menu>

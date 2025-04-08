@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:id="@+id/fragment_container"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#F5F5F5">
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/category_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Manage Categories"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="20dp"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/category_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp"
+        android:background="#FFFFFF"/>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/empty_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No categories available"
+        android:textColor="#757575"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:visibility="gone"/>
+
+</LinearLayout>
