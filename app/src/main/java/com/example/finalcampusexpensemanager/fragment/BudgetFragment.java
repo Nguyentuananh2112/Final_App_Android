@@ -86,9 +86,8 @@ public class BudgetFragment extends Fragment {
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.expense_item, parent, false);
-//            return new ViewHolder(view);
-            return null;
+            View view = LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
+            return new ViewHolder(view);
         }
 
         @Override
