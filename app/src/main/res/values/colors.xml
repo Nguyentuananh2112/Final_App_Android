@@ -11,7 +11,7 @@
     <color name="button_main">#1681FF</color>
     <color name="colorTextSecondary">#757575</color>
     <color name="red">#FF0000</color> <!-- Đỏ -->
-    <color name="green">#4CAF50</color>
+    <color name="green">#6ABE6E</color> <!-- Xanh lục -->
 
     <color name="selected_color">#1681FF</color>
     <color name="unselected_color">#808080</color>
@@ -21,10 +21,9 @@
     <color name="blue_primary">#2196F3</color>
     <color name="text_secondary">#757575</color>
 
+
     <color name="toggle_selected">#FFFFFF</color> <!-- White for selected background -->
     <color name="toggle_unselected">#E0E0E0</color> <!-- Light gray for unselected background -->
     <color name="toggle_text_selected">#1681FF</color> <!-- Blue for selected text -->
     <color name="toggle_text_unselected">#757575</color> <!-- Gray for unselected text -->
-
-    <color name="gray">#757575</color>
 </resources>

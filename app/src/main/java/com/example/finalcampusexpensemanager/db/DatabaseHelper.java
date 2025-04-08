@@ -18,7 +18,6 @@ import com.example.finalcampusexpensemanager.model.UserModel;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -62,10 +61,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String EXPENSES_TYPE = "type"; // Thêm cột type
     public static final String EXPENSES_CREATED_AT = "created_at";
     public static final String EXPENSES_UPDATED_AT = "updated_at";
-    public static final String EXPENSES_NOTE = "note";
-    public static final String EXPENSES_RECURRING_TYPE = "recurring_type";
-    public static final String EXPENSES_RECURRING_DAY = "recurring_day";
-    public static final String EXPENSES_RECURRING_END_DATE = "recurring_end_date";
 
     // Bảng budgets
     public static final String TABLE_BUDGETS = "budgets";
@@ -83,66 +78,55 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createUsersTable = "CREATE TABLE " + TABLE_USERS + "("
-                + USERS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + USERS_USERNAME + " TEXT,"
-                + USERS_PASSWORD + " TEXT,"
-                + USERS_EMAIL + " TEXT,"
-                + USERS_PHONE + " TEXT,"
-                + USERS_ROLE + " INTEGER,"
-                + USERS_CREATED_AT + " TEXT,"
-                + USERS_UPDATED_AT + " TEXT,"
-                + USERS_DELETED_AT + " TEXT)";
+        String createUsersTable = "CREATE TABLE " + TABLE_USERS + " ("
+                + USERS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + USERS_USERNAME + " VARCHAR(60) NOT NULL, "
+                + USERS_PASSWORD + " VARCHAR(200) NOT NULL, "
+                + USERS_EMAIL + " VARCHAR(60) NOT NULL, "
+                + USERS_PHONE + " VARCHAR(30) NOT NULL, "
+                + USERS_ROLE + " INTEGER, "
+                + USERS_CREATED_AT + " TEXT, "
+                + USERS_UPDATED_AT + " TEXT, "
+                + USERS_DELETED_AT + " TEXT )";
         db.execSQL(createUsersTable);
 
-        String createCategoriesTable = "CREATE TABLE " + TABLE_CATEGORIES + "("
-                + CATEGORIES_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + CATEGORIES_NAME + " TEXT,"
-                + CATEGORIES_DESCRIPTION + " TEXT,"
-                + CATEGORIES_CREATED_AT + " TEXT,"
-                + CATEGORIES_UPDATED_AT + " TEXT)";
+        String createCategoriesTable = "CREATE TABLE " + TABLE_CATEGORIES + " ("
+                + CATEGORIES_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + CATEGORIES_NAME + " VARCHAR(60) NOT NULL, "
+                + CATEGORIES_DESCRIPTION + " TEXT, "
+                + CATEGORIES_CREATED_AT + " TEXT, "
+                + CATEGORIES_UPDATED_AT + " TEXT )";
         db.execSQL(createCategoriesTable);
 
-        String createExpensesTable = "CREATE TABLE " + TABLE_EXPENSES + "("
-                + EXPENSES_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + EXPENSES_USER_ID + " INTEGER,"
-                + EXPENSES_CATEGORY_ID + " INTEGER,"
-                + EXPENSES_DESCRIPTION + " TEXT,"
-                + EXPENSES_DATE + " TEXT,"
-                + EXPENSES_AMOUNT + " INTEGER,"
-                + EXPENSES_IS_RECURRING + " INTEGER,"
-                + EXPENSES_RECURRENCE_INTERVAL + " TEXT,"
-                + EXPENSES_START_DATE + " TEXT,"
-                + EXPENSES_END_DATE + " TEXT,"
-                + EXPENSES_TYPE + " TEXT,"
-                + EXPENSES_CREATED_AT + " TEXT,"
-                + EXPENSES_UPDATED_AT + " TEXT,"
-                + "FOREIGN KEY(" + EXPENSES_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + USERS_ID + "),"
-                + "FOREIGN KEY(" + EXPENSES_CATEGORY_ID + ") REFERENCES " + TABLE_CATEGORIES + "(" + CATEGORIES_ID + "))";
+        String createExpensesTable = "CREATE TABLE " + TABLE_EXPENSES + " ("
+                + EXPENSES_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + EXPENSES_USER_ID + " INTEGER NOT NULL, "
+                + EXPENSES_CATEGORY_ID + " INTEGER NOT NULL, "
+                + EXPENSES_DESCRIPTION + " TEXT, "
+                + EXPENSES_DATE + " TEXT NOT NULL, "
+                + EXPENSES_AMOUNT + " INTEGER NOT NULL, "
+                + EXPENSES_IS_RECURRING + " INTEGER DEFAULT 0, "
+                + EXPENSES_RECURRENCE_INTERVAL + " TEXT, "
+                + EXPENSES_START_DATE + " TEXT, "
+                + EXPENSES_END_DATE + " TEXT, "
+                + EXPENSES_TYPE + " TEXT NOT NULL, " // Thêm cột type
+                + EXPENSES_CREATED_AT + " TEXT, "
+                + EXPENSES_UPDATED_AT + " TEXT, "
+                + "FOREIGN KEY (" + EXPENSES_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + USERS_ID + "), "
+                + "FOREIGN KEY (" + EXPENSES_CATEGORY_ID + ") REFERENCES " + TABLE_CATEGORIES + "(" + CATEGORIES_ID + ") )";
         db.execSQL(createExpensesTable);
 
-        String createBudgetsTable = "CREATE TABLE " + TABLE_BUDGETS + "("
-                + BUDGETS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + BUDGETS_USER_ID + " INTEGER,"
-                + BUDGETS_CATEGORY_ID + " INTEGER,"
-                + BUDGETS_MONTH + " TEXT,"
-                + BUDGETS_AMOUNT + " INTEGER,"
-                + BUDGETS_CREATED_AT + " TEXT,"
-                + BUDGETS_UPDATED_AT + " TEXT,"
-                + "FOREIGN KEY(" + BUDGETS_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + USERS_ID + "),"
-                + "FOREIGN KEY(" + BUDGETS_CATEGORY_ID + ") REFERENCES " + TABLE_CATEGORIES + "(" + CATEGORIES_ID + "))";
+        String createBudgetsTable = "CREATE TABLE " + TABLE_BUDGETS + " ("
+                + BUDGETS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + BUDGETS_USER_ID + " INTEGER NOT NULL, "
+                + BUDGETS_CATEGORY_ID + " INTEGER NOT NULL, "
+                + BUDGETS_MONTH + " TEXT NOT NULL, "
+                + BUDGETS_AMOUNT + " INTEGER NOT NULL, "
+                + BUDGETS_CREATED_AT + " TEXT, "
+                + BUDGETS_UPDATED_AT + " TEXT, "
+                + "FOREIGN KEY (" + BUDGETS_USER_ID + ") REFERENCES " + TABLE_USERS + "(" + USERS_ID + "), "
+                + "FOREIGN KEY (" + BUDGETS_CATEGORY_ID + ") REFERENCES " + TABLE_CATEGORIES + "(" + CATEGORIES_ID + ") )";
         db.execSQL(createBudgetsTable);
-
-        // Tạo bảng budget_warnings
-        String createBudgetWarningsTable = "CREATE TABLE budget_warnings("
-                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + "user_id INTEGER,"
-                + "category TEXT,"
-                + "amount REAL,"
-                + "total_income REAL,"
-                + "created_at INTEGER,"
-                + "FOREIGN KEY(user_id) REFERENCES users(id))";
-        db.execSQL(createBudgetWarningsTable);
     }
 
     @Override
@@ -161,22 +145,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Insert Expense với type
-    public long insertExpense(int userId, int categoryId, String note, String date, int amount, boolean isRecurring, String recurringType, Integer recurringDay, String recurringEndDate, String type) {
+    public long insertExpense(int userId, int categoryId, String description, String date, int amount, boolean isRecurring, String recurrenceInterval, String startDate, String endDate, String type) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        String dateNow = sdf.format(new Date());
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(EXPENSES_USER_ID, userId);
         values.put(EXPENSES_CATEGORY_ID, categoryId);
-        values.put(EXPENSES_DESCRIPTION, note);
+        values.put(EXPENSES_DESCRIPTION, description);
         values.put(EXPENSES_DATE, date);
         values.put(EXPENSES_AMOUNT, amount);
         values.put(EXPENSES_IS_RECURRING, isRecurring ? 1 : 0);
-        values.put(EXPENSES_RECURRENCE_INTERVAL, recurringType);
-        values.put(EXPENSES_START_DATE, recurringDay != null ? String.valueOf(recurringDay) : null);
-        values.put(EXPENSES_END_DATE, recurringEndDate);
-        values.put(EXPENSES_TYPE, type);
-        values.put(EXPENSES_CREATED_AT, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()));
-
-        return db.insert(TABLE_EXPENSES, null, values);
+        values.put(EXPENSES_RECURRENCE_INTERVAL, recurrenceInterval);
+        values.put(EXPENSES_START_DATE, startDate);
+        values.put(EXPENSES_END_DATE, endDate);
+        values.put(EXPENSES_TYPE, type); // Thêm type
+        values.put(EXPENSES_CREATED_AT, dateNow);
+        long insert = db.insert(TABLE_EXPENSES, null, values);
+        db.close();
+        return insert;
     }
 
 
@@ -462,226 +450,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         db.close();
         return budgets;
-    }
-
-    public List<String> checkBudgetExceeded(int userId) {
-        List<String> exceededCategories = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        
-        // Lấy tháng và năm hiện tại
-        Calendar calendar = Calendar.getInstance();
-        int currentMonth = calendar.get(Calendar.MONTH) + 1; // Tháng bắt đầu từ 0
-        int currentYear = calendar.get(Calendar.YEAR);
-        
-        // Truy vấn để lấy tổng thu nhập và chi tiêu của tháng hiện tại
-        String incomeQuery = "SELECT COALESCE(SUM(amount), 0) as total_income FROM expenses " +
-                           "WHERE user_id = ? AND type = 'Income' " +
-                           "AND strftime('%m', date) = ? AND strftime('%Y', date) = ?";
-        Cursor incomeCursor = db.rawQuery(incomeQuery, new String[]{
-            String.valueOf(userId),
-            String.format("%02d", currentMonth),
-            String.valueOf(currentYear)
-        });
-        
-        double totalIncome = 0;
-        if (incomeCursor.moveToFirst()) {
-            totalIncome = incomeCursor.getDouble(0);
-        }
-        incomeCursor.close();
-        
-        String expenseQuery = "SELECT COALESCE(SUM(amount), 0) as total_expense FROM expenses " +
-                            "WHERE user_id = ? AND type = 'Expense' " +
-                            "AND strftime('%m', date) = ? AND strftime('%Y', date) = ?";
-        Cursor expenseCursor = db.rawQuery(expenseQuery, new String[]{
-            String.valueOf(userId),
-            String.format("%02d", currentMonth),
-            String.valueOf(currentYear)
-        });
-        
-        double totalExpense = 0;
-        if (expenseCursor.moveToFirst()) {
-            totalExpense = expenseCursor.getDouble(0);
-        }
-        expenseCursor.close();
-        
-        // Kiểm tra nếu tổng chi tiêu vượt quá tổng thu nhập
-        if (totalExpense > totalIncome) {
-            exceededCategories.add(String.format("Tổng chi tiêu (%.2f) vượt quá tổng thu nhập (%.2f)", 
-                totalExpense, totalIncome));
-        }
-        
-        // Kiểm tra từng danh mục ngân sách
-        String budgetQuery = "SELECT c.name, b.budget_amount, COALESCE(SUM(e.amount), 0) as total_expense " +
-                           "FROM categories c " +
-                           "LEFT JOIN budgets b ON c.id = b.category_id AND b.user_id = ? " +
-                           "AND b.month = ? AND strftime('%Y', b.created_at) = ? " +
-                           "LEFT JOIN expenses e ON c.id = e.category_id AND e.user_id = ? " +
-                           "AND strftime('%m', e.date) = ? AND strftime('%Y', e.date) = ? " +
-                           "WHERE b.budget_amount > 0 " +
-                           "GROUP BY c.id, c.name, b.budget_amount";
-        
-        Cursor cursor = db.rawQuery(budgetQuery, new String[]{
-            String.valueOf(userId),
-            String.format("%02d", currentMonth),
-            String.valueOf(currentYear),
-            String.valueOf(userId),
-            String.format("%02d", currentMonth),
-            String.valueOf(currentYear)
-        });
-        
-        while (cursor.moveToNext()) {
-            String categoryName = cursor.getString(0);
-            double budgetAmount = cursor.getDouble(1);
-            double totalCategoryExpense = cursor.getDouble(2);
-            
-            if (totalCategoryExpense > budgetAmount) {
-                exceededCategories.add(String.format("%s: Đã chi %.2f / Ngân sách %.2f", 
-                    categoryName, totalCategoryExpense, budgetAmount));
-            }
-        }
-        
-        cursor.close();
-        return exceededCategories;
-    }
-
-    // Thêm phương thức lấy tổng chi tiêu theo danh mục
-    public double getTotalExpenseByCategory(int userId, int categoryId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        double totalExpense = 0;
-
-        // Lấy tháng hiện tại
-        Calendar calendar = Calendar.getInstance();
-        int currentMonth = calendar.get(Calendar.MONTH) + 1; // Tháng bắt đầu từ 0
-        int currentYear = calendar.get(Calendar.YEAR);
-
-        String query = "SELECT COALESCE(SUM(amount), 0) FROM expenses " +
-                      "WHERE user_id = ? AND category_id = ? " +
-                      "AND type = 'Expense' " +
-                      "AND strftime('%m', date) = ? AND strftime('%Y', date) = ?";
-
-        Cursor cursor = db.rawQuery(query, new String[]{
-            String.valueOf(userId),
-            String.valueOf(categoryId),
-            String.format("%02d", currentMonth),
-            String.valueOf(currentYear)
-        });
-
-        if (cursor.moveToFirst()) {
-            totalExpense = cursor.getDouble(0);
-        }
-
-        cursor.close();
-        return totalExpense;
-    }
-
-    public double getTotalIncome(int userId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        double totalIncome = 0;
-
-        String query = "SELECT COALESCE(SUM(amount), 0) FROM expenses " +
-                      "WHERE user_id = ? AND type = 'Income'";
-
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
-
-        if (cursor.moveToFirst()) {
-            totalIncome = cursor.getDouble(0);
-        }
-
-        cursor.close();
-        db.close();
-        
-        // Debug log
-        Log.d("DatabaseHelper", "Total Income for user " + userId + ": " + totalIncome);
-        
-        return totalIncome;
-    }
-
-    public double getTotalExpense(int userId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        double totalExpense = 0;
-
-        String query = "SELECT COALESCE(SUM(amount), 0) FROM expenses " +
-                      "WHERE user_id = ? AND type = 'Expense'";
-
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
-
-        if (cursor.moveToFirst()) {
-            totalExpense = cursor.getDouble(0);
-        }
-
-        cursor.close();
-        db.close();
-        
-        // Debug log
-        Log.d("DatabaseHelper", "Total Expense for user " + userId + ": " + totalExpense);
-        
-        return totalExpense;
-    }
-
-    public double getBudgetAmount(int userId, int categoryId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        double budgetAmount = 0;
-
-        // Lấy tháng hiện tại
-        Calendar calendar = Calendar.getInstance();
-        int currentMonth = calendar.get(Calendar.MONTH) + 1; // Tháng bắt đầu từ 0
-        int currentYear = calendar.get(Calendar.YEAR);
-
-        String query = "SELECT budget_amount FROM budgets " +
-                      "WHERE user_id = ? AND category_id = ? " +
-                      "AND month = ? AND strftime('%Y', created_at) = ?";
-
-        Cursor cursor = db.rawQuery(query, new String[]{
-            String.valueOf(userId),
-            String.valueOf(categoryId),
-            String.format("%02d", currentMonth),
-            String.valueOf(currentYear)
-        });
-
-        if (cursor.moveToFirst()) {
-            budgetAmount = cursor.getDouble(0);
-        }
-
-        cursor.close();
-        return budgetAmount;
-    }
-
-    public void addBudgetWarning(int userId, String category, double amount, double totalIncome) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put("user_id", userId);
-        values.put("category", category);
-        values.put("amount", amount);
-        values.put("total_income", totalIncome);
-        values.put("created_at", System.currentTimeMillis());
-        db.insert("budget_warnings", null, values);
-        db.close();
-    }
-
-    public List<String> getBudgetWarnings(int userId) {
-        List<String> warnings = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query("budget_warnings",
-                new String[]{"category", "amount", "total_income", "created_at"},
-                "user_id = ?",
-                new String[]{String.valueOf(userId)},
-                null, null, "created_at DESC");
-
-        if (cursor.moveToFirst()) {
-            do {
-                String category = cursor.getString(0);
-                double amount = cursor.getDouble(1);
-                double totalIncome = cursor.getDouble(2);
-                long timestamp = cursor.getLong(3);
-                
-                String warning = String.format("Danh mục: %s\nSố tiền: %,.0f VND\nThu nhập: %,.0f VND\nThời gian: %s",
-                        category, amount, totalIncome, new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date(timestamp)));
-                warnings.add(warning);
-            } while (cursor.moveToNext());
-        }
-        
-        cursor.close();
-        db.close();
-        return warnings;
     }
 }

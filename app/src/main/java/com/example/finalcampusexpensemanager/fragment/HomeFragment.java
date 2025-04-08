@@ -2,22 +2,18 @@ package com.example.finalcampusexpensemanager.fragment;
 
 import android.app.DatePickerDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.finalcampusexpensemanager.R;
 import com.example.finalcampusexpensemanager.db.DatabaseHelper;
-import com.example.finalcampusexpensemanager.helper.NotificationHelper;
 import com.example.finalcampusexpensemanager.model.CategoryModel;
 import com.example.finalcampusexpensemanager.model.ExpenseModel;
 import com.google.android.material.button.MaterialButton;
@@ -25,11 +21,6 @@ import com.google.android.material.button.MaterialButton;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-
-import android.app.AlertDialog;
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.os.Build;
 
 public class HomeFragment extends Fragment {
     private TextView totalBalance, incomeAmount, expenseAmount;
@@ -67,51 +58,6 @@ public class HomeFragment extends Fragment {
         loadTransactions();
 
         return view;
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        // Kiểm tra xem đã hỏi về thông báo chưa
-        SharedPreferences prefs = requireContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-        boolean hasAskedForNotification = prefs.getBoolean("has_asked_for_notification", false);
-
-        if (!hasAskedForNotification) {
-            // Yêu cầu quyền thông báo
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
-            }
-            
-            // Lưu trạng thái đã hỏi
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putBoolean("has_asked_for_notification", true);
-            editor.apply();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Quyền được cấp, hiển thị thông báo chào mừng
-                NotificationHelper notificationHelper = new NotificationHelper(requireContext());
-                notificationHelper.showWelcomeNotification();
-                
-                // Lưu tùy chọn bật thông báo
-                SharedPreferences prefs = requireContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean("notifications_enabled", true);
-                editor.apply();
-            } else {
-                // Lưu tùy chọn tắt thông báo
-                SharedPreferences prefs = requireContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putBoolean("notifications_enabled", false);
-                editor.apply();
-            }
-        }
     }
 
     private void showDatePicker() {
