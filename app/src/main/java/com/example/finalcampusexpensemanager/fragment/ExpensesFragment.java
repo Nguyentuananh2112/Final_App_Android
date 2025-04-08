@@ -14,6 +14,7 @@ import android.widget.Toast;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.finalcampusexpensemanager.OnCategoryChangeListener;
 import com.example.finalcampusexpensemanager.R;
 import com.example.finalcampusexpensemanager.db.DatabaseHelper;
 import com.example.finalcampusexpensemanager.model.CategoryModel;
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class ExpensesFragment extends Fragment implements OnCategoryAddedListener {
+public class ExpensesFragment extends Fragment implements OnCategoryChangeListener {
     private TabLayout tabLayout;
     private MaterialButton dateInput, saveButton, addCategoryButton;
     private TextInputEditText noteInput, amountInput;
@@ -35,6 +36,7 @@ public class ExpensesFragment extends Fragment implements OnCategoryAddedListene
     private boolean isIncomeMode = true;
     private DatabaseHelper dbHelper;
     private ArrayAdapter<String> categoryAdapter;
+    private List<String> categoryNames;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -172,7 +174,7 @@ public class ExpensesFragment extends Fragment implements OnCategoryAddedListene
     }
 
     private void setupCategorySpinner() {
-        List<String> categoryNames = new ArrayList<>();
+        categoryNames = new ArrayList<>();
         categoryNames.add("Select Category");
         for (CategoryModel category : dbHelper.getAllCategories()) {
             categoryNames.add(category.getName());
@@ -180,6 +182,20 @@ public class ExpensesFragment extends Fragment implements OnCategoryAddedListene
         categoryAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categoryNames);
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         categorySpinner.setAdapter(categoryAdapter);
+    }
+
+    private void refreshCategorySpinner() {
+        categoryNames.clear();
+        categoryNames.add("Select Category");
+        for (CategoryModel category : dbHelper.getAllCategories()) {
+            categoryNames.add(category.getName());
+        }
+        categoryAdapter.notifyDataSetChanged();
+
+        if (!categoryNames.contains(selectedCategory)) {
+            selectedCategory = "";
+            categorySpinner.setSelection(0);
+        }
     }
 
     private void resetForm() {
@@ -192,17 +208,40 @@ public class ExpensesFragment extends Fragment implements OnCategoryAddedListene
 
     private void openCategoryFragment() {
         CategoryFragment categoryFragment = new CategoryFragment();
-        categoryFragment.setOnCategoryAddedListener(this); // Sửa thành setOnCategoryAddedListener
+        categoryFragment.setOnCategoryChangeListener(this);
         categoryFragment.show(getParentFragmentManager(), "CategoryFragment");
     }
 
     @Override
     public void onCategoryAdded(CategoryModel newCategory) {
-        categoryAdapter.add(newCategory.getName());
+        categoryNames.add(newCategory.getName());
         categoryAdapter.notifyDataSetChanged();
     }
-}
 
-interface OnCategoryAddedListener {
-    void onCategoryAdded(CategoryModel newCategory);
+    @Override
+    public void onCategoryEdited(CategoryModel editedCategory) {
+        for (int i = 0; i < categoryNames.size(); i++) {
+            if (getCategoryIdFromName(categoryNames.get(i)) == editedCategory.getId()) {
+                categoryNames.set(i, editedCategory.getName());
+                break;
+            }
+        }
+        categoryAdapter.notifyDataSetChanged();
+
+        if (selectedCategory.equalsIgnoreCase(editedCategory.getName())) {
+            selectedCategory = editedCategory.getName();
+        }
+    }
+
+    @Override
+    public void onCategoryDeleted(int categoryId) {
+        refreshCategorySpinner();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Làm mới Spinner khi fragment được quay lại
+        refreshCategorySpinner();
+    }
 }
