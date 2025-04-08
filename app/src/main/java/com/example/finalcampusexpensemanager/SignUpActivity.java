@@ -41,28 +41,6 @@ public class SignUpActivity extends AppCompatActivity {
                 password.matches(".*[!@#$%^&*()].*"); // it nhat 1 ky tu dac biet
     }
 
-//    private String hashPassword(String password) {
-//        try {
-//            // Khởi tạo thuật toán SHA-256
-//            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-//
-//            // Mã hóa mật khẩu thành chuỗi byte
-//            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-//
-//            // Chuyển đổi mảng byte thành chuỗi Hex (dễ lưu trữ)
-//            StringBuilder hexString = new StringBuilder();
-//            for (byte b : hash) {
-//                hexString.append(String.format("%02x", b)); // Chuyển mỗi byte thành 2 ký tự Hex
-//            }
-//
-//            // Trả về chuỗi đã mã hóa
-//            return hexString.toString();
-//        } catch (NoSuchAlgorithmException e) {
-//            throw new RuntimeException("Error hashing password", e);
-//        }
-//    }
-
-
 
 
     @Override

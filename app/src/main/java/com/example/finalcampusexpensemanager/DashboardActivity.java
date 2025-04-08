@@ -71,18 +71,18 @@ public class DashboardActivity
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
                 new AlertDialog.Builder(DashboardActivity.this)
-                        .setTitle("Đăng xuất")
-                        .setMessage("Bạn có chắc chắn muốn đăng xuất?")
-                        .setPositiveButton("Có", new DialogInterface.OnClickListener() {
+                        .setTitle("Logout")
+                        .setMessage("Ara you sure wanna logout ??")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int which) {
-                                Toast.makeText(DashboardActivity.this, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(DashboardActivity.this, "Logou Successfully", Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(DashboardActivity.this, SignInActivity.class);
                                 startActivity(intent);
                                 finish();
                             }
                         })
-                        .setNegativeButton("Không", new DialogInterface.OnClickListener() {
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
