@@ -59,7 +59,7 @@
         android:layout_marginBottom="20dp"
         app:cornerRadius="8dp"
         style="@style/Widget.MaterialComponents.Button"
-        android:backgroundTint="#FF5722"
+        android:backgroundTint="@color/blue_primary"
         android:textColor="#FFFFFF"/>
 
     <androidx.recyclerview.widget.RecyclerView

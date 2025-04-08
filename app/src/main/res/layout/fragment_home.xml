@@ -151,6 +151,15 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/see_all_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="See All"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="@color/blue_primary"
+                app:cornerRadius="8dp" />
+
 
         </LinearLayout>
 

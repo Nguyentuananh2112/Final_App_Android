@@ -337,6 +337,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return result;
     }
+
+    // Thêm phương thức xóa giao dịch
+    public int deleteExpense(int expenseId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int result = db.delete(TABLE_EXPENSES, EXPENSES_ID + " = ?", new String[]{String.valueOf(expenseId)});
+        db.close();
+        return result;
+    }
     public void printAllCategories() {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CATEGORIES, null);
@@ -495,5 +503,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         db.close();
         return name;
+    }
+
+    public double getTotalIncome(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT SUM(" + EXPENSES_AMOUNT + ") FROM " + TABLE_EXPENSES + 
+                      " WHERE " + EXPENSES_USER_ID + " = ? AND " + EXPENSES_TYPE + " = 'Income'";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
+        double total = 0;
+        if (cursor.moveToFirst()) {
+            total = cursor.getDouble(0);
+        }
+        cursor.close();
+        return total;
+    }
+
+    public double getTotalExpense(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT SUM(" + EXPENSES_AMOUNT + ") FROM " + TABLE_EXPENSES + 
+                      " WHERE " + EXPENSES_USER_ID + " = ? AND " + EXPENSES_TYPE + " = 'Expense'";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(userId)});
+        double total = 0;
+        if (cursor.moveToFirst()) {
+            total = cursor.getDouble(0);
+        }
+        cursor.close();
+        return total;
     }
 }

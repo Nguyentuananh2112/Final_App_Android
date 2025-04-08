@@ -1,35 +1,39 @@
 package com.example.finalcampusexpensemanager.fragment;
 
-import android.app.DatePickerDialog;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.finalcampusexpensemanager.R;
 import com.example.finalcampusexpensemanager.db.DatabaseHelper;
+import com.example.finalcampusexpensemanager.helper.NotificationHelper;
 import com.example.finalcampusexpensemanager.model.CategoryModel;
 import com.example.finalcampusexpensemanager.model.ExpenseModel;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
     private TextView totalBalance, incomeAmount, expenseAmount;
-//    private MaterialButton dateInput;
     private RecyclerView transactionRecyclerView;
     private TransactionAdapter transactionAdapter;
     private List<ExpenseModel> transactionList;
     private DatabaseHelper dbHelper;
     private int userId;
+    private MaterialButton seeAllButton;
 
     public HomeFragment() {}
 
@@ -40,8 +44,8 @@ public class HomeFragment extends Fragment {
         totalBalance = view.findViewById(R.id.total_balance);
         incomeAmount = view.findViewById(R.id.income_amount);
         expenseAmount = view.findViewById(R.id.expense_amount);
-
         transactionRecyclerView = view.findViewById(R.id.transaction_recycler_view);
+        seeAllButton = view.findViewById(R.id.see_all_button);
 
         dbHelper = new DatabaseHelper(getContext());
         if (getArguments() != null) {
@@ -52,30 +56,57 @@ public class HomeFragment extends Fragment {
         transactionAdapter = new TransactionAdapter(transactionList);
         transactionRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         transactionRecyclerView.setAdapter(transactionAdapter);
+        seeAllButton = view.findViewById(R.id.see_all_button);
 
-//        dateInput.setOnClickListener(v -> showDatePicker());
-
+        seeAllButton.setOnClickListener(v -> openTransactionHistory());
         loadTransactions();
 
         return view;
     }
 
-//    private void showDatePicker() {
-//        Calendar calendar = Calendar.getInstance();
-//        int year = calendar.get(Calendar.YEAR);
-//        int month = calendar.get(Calendar.MONTH);
-//        int day = calendar.get(Calendar.DAY_OF_MONTH);
-//
-//        new DatePickerDialog(getContext(), (view, selectedYear, selectedMonth, selectedDay) -> {
-//            String selectedDate = String.format("%02d/%02d/%d", selectedMonth + 1, selectedDay, selectedYear);
-//            dateInput.setText(selectedDate);
-//        }, year, month, day).show();
+    private void openTransactionHistory() {
+        TransactionHistoryFragment fragment = TransactionHistoryFragment.newInstance(userId);
+        fragment.show(getParentFragmentManager(), "TransactionHistoryFragment");
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        
+        // Yêu cầu quyền thông báo của hệ thống
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 1);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Quyền được cấp, hiển thị thông báo chào mừng
+                NotificationHelper notificationHelper = new NotificationHelper(requireContext());
+                notificationHelper.showWelcomeNotification();
+            }
+        }
+    }
+
+//    private void loadTransactions() {
+//        transactionList.clear();
+//        transactionList.addAll(dbHelper.getExpensesByUser(userId));
+//        transactionAdapter.notifyDataSetChanged();
+//        updateBalance();
 //    }
 
-    private void loadTransactions() {
+    public void loadTransactions() {
+        // Làm mới danh sách giao dịch (5 giao dịch gần nhất)
         transactionList.clear();
-        transactionList.addAll(dbHelper.getExpensesByUser(userId));
+        List<ExpenseModel> allTransactions = dbHelper.getExpensesByUser(userId);
+        int limit = Math.min(allTransactions.size(), 5);
+        transactionList.addAll(allTransactions.subList(0, limit));
         transactionAdapter.notifyDataSetChanged();
+
+        // Cập nhật các con số Total Balance, Income, Expense
         updateBalance();
     }
 
@@ -83,7 +114,7 @@ public class HomeFragment extends Fragment {
         int totalIncome = 0;
         int totalExpense = 0;
 
-        for (ExpenseModel transaction : transactionList) {
+        for (ExpenseModel transaction : dbHelper.getExpensesByUser(userId)) {
             if ("Income".equals(transaction.getType())) {
                 totalIncome += transaction.getAmount();
             } else if ("Expense".equals(transaction.getType())) {
@@ -91,9 +122,21 @@ public class HomeFragment extends Fragment {
             }
         }
 
-        incomeAmount.setText("$" + totalIncome);
-        expenseAmount.setText("$" + totalExpense);
-        totalBalance.setText("$" + (totalIncome - totalExpense));
+        // Cập nhật hiển thị số tiền
+        incomeAmount.setText(String.format("%,d VND", totalIncome));
+        expenseAmount.setText(String.format("%,d VND", totalExpense));
+        totalBalance.setText(String.format("%,d VND", (totalIncome - totalExpense)));
+
+        // Kiểm tra và hiển thị thông báo nếu chi tiêu vượt quá thu nhập
+        if (totalExpense > totalIncome) {
+            SharedPreferences prefs = requireContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+            boolean notificationsEnabled = prefs.getBoolean("notifications_enabled", false);
+            
+            if (notificationsEnabled) {
+                NotificationHelper notificationHelper = new NotificationHelper(requireContext());
+                notificationHelper.showBudgetWarningNotification(totalIncome, totalExpense);
+            }
+        }
     }
 
     public void updateTransaction(String type, int amount, String date, String note, String category) {
@@ -116,6 +159,15 @@ public class HomeFragment extends Fragment {
     }
 
 
+    private void showWelcomeNotification() {
+        SharedPreferences prefs = requireContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
+        boolean notificationsEnabled = prefs.getBoolean("notifications_enabled", false);
+        
+        if (notificationsEnabled) {
+            NotificationHelper notificationHelper = new NotificationHelper(requireContext());
+            notificationHelper.showWelcomeNotification();
+        }
+    }
 }
 
 class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.ViewHolder> {
@@ -165,6 +217,4 @@ class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.ViewHol
             textView = itemView.findViewById(android.R.id.text1);
         }
     }
-
-
 }

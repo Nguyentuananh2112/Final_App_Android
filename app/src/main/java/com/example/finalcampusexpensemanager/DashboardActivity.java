@@ -1,8 +1,11 @@
 package com.example.finalcampusexpensemanager;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +21,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.finalcampusexpensemanager.adapter.ViewPagerAdapter;
+import com.example.finalcampusexpensemanager.helper.NotificationHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
 import com.google.android.material.navigation.NavigationView;
@@ -31,6 +35,7 @@ public class DashboardActivity
     Toolbar toolbar;
     ViewPager2 viewPager2;
     int userId;
+    private boolean notificationsEnabled = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,8 +46,6 @@ public class DashboardActivity
         toolbar = findViewById(R.id.toolbar);
         viewPager2 = findViewById(R.id.viewPager);
         navigationView = findViewById(R.id.nav_View);
-
-
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -61,46 +64,34 @@ public class DashboardActivity
         }
         setupViewPager();
 
-
-
-
-        // xu ly logout
+        // Xử lý logout
         Menu menu = navigationView.getMenu();
         MenuItem itemLogout = menu.findItem(R.id.nav_logout);
         itemLogout.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
-                // tao thong bao co chac muon logout
                 new AlertDialog.Builder(DashboardActivity.this)
-                        .setTitle("Logout") // DAY LA TIEU DE
-                        .setMessage("Are you sure wanna logout")// dua ra thong bao co muon logout
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        .setTitle("Đăng xuất")
+                        .setMessage("Bạn có chắc chắn muốn đăng xuất?")
+                        .setPositiveButton("Có", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialogInterface, int which) { // int which xác định nút nào được nhấn trong thong bao
-                                // nhan ok thi se dang xuat
-                                Toast.makeText(DashboardActivity.this, " Logout Successfully", Toast.LENGTH_SHORT).show();
-                                // chuyen ve man hinh login
+                            public void onClick(DialogInterface dialogInterface, int which) {
+                                Toast.makeText(DashboardActivity.this, "Đăng xuất thành công", Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(DashboardActivity.this, SignInActivity.class);
                                 startActivity(intent);
                                 finish();
                             }
                         })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        .setNegativeButton("Không", new DialogInterface.OnClickListener() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) { // int which xác định nút nào được nhấn trong thong bao
-                                // nhan cancel de huy
+                            public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                             }
                         })
                         .show();
-
                 return true;
             }
         });
-
-
-
-
 
         // Xử lý click vào tab bottom
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {
@@ -122,9 +113,79 @@ public class DashboardActivity
                 return true;
             }
         });
+
+        // Lấy trạng thái thông báo từ SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        notificationsEnabled = prefs.getBoolean("notifications_enabled", true);
+
+        // Cập nhật icon thông báo
+        updateNotificationIcon();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        return true;
+    }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_notification) {
+            // Toggle trạng thái thông báo
+            notificationsEnabled = !notificationsEnabled;
+            
+            // Lưu trạng thái vào SharedPreferences
+            SharedPreferences.Editor editor = getSharedPreferences("AppPrefs", MODE_PRIVATE).edit();
+            editor.putBoolean("notifications_enabled", notificationsEnabled);
+            editor.apply();
+            
+            // Cập nhật icon
+            updateNotificationIcon();
+            
+            // Hiển thị thông báo
+            Toast.makeText(this, 
+                notificationsEnabled ? "Notifications enabled" : "Notifications disabled", 
+                Toast.LENGTH_SHORT).show();
+
+            // Nếu bật thông báo, yêu cầu quyền thông báo của hệ thống
+            if (notificationsEnabled) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 1);
+                }
+            }
+            
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Quyền được cấp, hiển thị thông báo chào mừng
+                NotificationHelper notificationHelper = new NotificationHelper(this);
+                notificationHelper.showWelcomeNotification();
+            } else {
+                // Nếu không được cấp quyền, tắt thông báo
+                notificationsEnabled = false;
+                SharedPreferences.Editor editor = getSharedPreferences("AppPrefs", MODE_PRIVATE).edit();
+                editor.putBoolean("notifications_enabled", false);
+                editor.apply();
+                updateNotificationIcon();
+                Toast.makeText(this, "Notifications disabled due to permission denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void updateNotificationIcon() {
+        MenuItem notificationItem = toolbar.getMenu().findItem(R.id.action_notification);
+        if (notificationItem != null) {
+            notificationItem.setIcon(notificationsEnabled ? 
+                R.drawable.notification_on : R.drawable.notification_off);
+        }
+    }
 
     private void setupViewPager(){
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), getLifecycle());
@@ -163,7 +224,6 @@ public class DashboardActivity
         });
     }
 
-
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.menu_home){
@@ -182,6 +242,5 @@ public class DashboardActivity
         // click xong tự động đóng vào
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
-
     }
 }
