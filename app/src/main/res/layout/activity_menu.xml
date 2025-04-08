@@ -15,7 +15,8 @@
             android:layout_height="?actionBarSize"
             android:id="@+id/toolbar"
             android:elevation="4dp"
-            android:background="#DCF3F6"/>
+            android:background="#DCF3F6"
+            app:menu="@menu/toolbar_menu"/>
         <androidx.viewpager2.widget.ViewPager2
             android:layout_width="match_parent"
             android:layout_height="match_parent"

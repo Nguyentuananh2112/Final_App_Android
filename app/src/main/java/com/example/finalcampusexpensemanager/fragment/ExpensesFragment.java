@@ -2,7 +2,12 @@ package com.example.finalcampusexpensemanager.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +16,16 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.finalcampusexpensemanager.OnCategoryChangeListener;
 import com.example.finalcampusexpensemanager.R;
 import com.example.finalcampusexpensemanager.db.DatabaseHelper;
+import com.example.finalcampusexpensemanager.helper.NotificationHelper;
 import com.example.finalcampusexpensemanager.model.CategoryModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.tabs.TabLayout;
@@ -135,33 +144,110 @@ public class ExpensesFragment extends Fragment implements OnCategoryChangeListen
             return;
         }
 
-        int categoryId = getCategoryIdFromName(selectedCategory);
-        if (categoryId == -1) {
-            Toast.makeText(getContext(), "Invalid category", Toast.LENGTH_SHORT).show();
-            return;
+        String type = isIncomeMode ? "Income" : "Expense";
+        saveTransactionToDatabase(type, amount, date, note, selectedCategory);
+    }
+
+    private void saveTransactionToDatabase(String type, int amount, String date, String note, String category) {
+        // Kiểm tra quyền thông báo
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS) 
+                != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
         }
 
-        String type = isIncomeMode ? "Income" : "Expense";
-        long result = dbHelper.insertExpense(userId, categoryId, note, date, amount, false, null, null, null, type);
+        // Kiểm tra chi tiêu vượt mức
+        if (type.equals("Expense")) {
+            double totalIncome = dbHelper.getTotalIncome(userId);
+            double totalExpense = dbHelper.getTotalExpense(userId);
+            double newTotalExpense = totalExpense + amount;
+            
+            if (newTotalExpense > totalIncome) {
+                // Tính phần trăm vượt mức
+                double percentage = ((newTotalExpense - totalIncome) / totalIncome) * 100;
+                
+                // Hiển thị dialog xác nhận
+                AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+                builder.setTitle("EXPENSE CONFIRMATION")
+                       .setMessage(String.format(
+                           "Total Income: %,.0f VND\n" +
+                           "Current Total Expense: %,.0f VND\n" +
+                           "New Expense: %d VND\n" +
+                           "Total Expense After Adding: %,.0f VND\n\n" +
+                           "Are you sure you want to exceed your budget?",
+                           totalIncome, totalExpense, amount, newTotalExpense
+                       ))
+                       .setPositiveButton("Yes", (dialog, which) -> {
+                           // Lưu giao dịch
+                           int categoryId = getCategoryIdFromName(category);
+                           long result = dbHelper.insertExpense(userId, categoryId, note, date, amount, false, null, null, null, type);
+                           
+                           if (result != -1) {
+                               // Hiển thị thông báo cảnh báo
+                               NotificationHelper notificationHelper = new NotificationHelper(requireContext());
+                               notificationHelper.showBudgetExceededNotification(
+                                   String.format("Warning: Expense exceeds budget by %.2f%%", percentage),
+                                   totalIncome,
+                                   newTotalExpense
+                               );
+                               
+                               // Rung thiết bị
+                               Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+                               if (vibrator != null) {
+                                   vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                               }
+                               
+                               // Reset form
+                               resetForm();
+                               
+                               // Cập nhật HomeFragment và chuyển về tab Home
+                               notifyHomeFragment(type, amount, date, note, category);
+                           }
+                       })
+                       .setNegativeButton("No", null)
+                       .show();
+                return;
+            }
+        }
 
+        // Nếu không vượt mức hoặc là Income, lưu giao dịch bình thường
+        int categoryId = getCategoryIdFromName(category);
+        long result = dbHelper.insertExpense(userId, categoryId, note, date, amount, false, null, null, null, type);
+        
         if (result != -1) {
-            Toast.makeText(getContext(), type + " saved successfully", Toast.LENGTH_SHORT).show();
+            // Hiển thị thông báo thành công
+            NotificationHelper notificationHelper = new NotificationHelper(requireContext());
+            notificationHelper.showTransactionNotification(type, amount, category);
+            
+            // Rung thiết bị
+            Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+            if (vibrator != null) {
+                vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            }
+            
+            // Reset form
             resetForm();
-            notifyHomeFragment(type, amount, date, note, selectedCategory);
-        } else {
-            Toast.makeText(getContext(), "Failed to save " + type, Toast.LENGTH_SHORT).show();
+            
+            // Cập nhật HomeFragment
+            notifyHomeFragment(type, amount, date, note, category);
         }
     }
 
     private void notifyHomeFragment(String type, int amount, String date, String note, String category) {
-        HomeFragment homeFragment = (HomeFragment) getParentFragmentManager().findFragmentByTag("HomeFragment");
-        if (homeFragment != null) {
-            homeFragment.updateTransaction(type, amount, date, note, category);
+        if (getActivity() != null) {
+            HomeFragment homeFragment = (HomeFragment) getActivity().getSupportFragmentManager()
+                    .findFragmentByTag("HomeFragment");
+            if (homeFragment != null) {
+                homeFragment.updateTransaction(type, amount, date, note, category);
+            }
+            
+            // Chuyển về tab Home
+            ViewPager2 viewPager = getActivity().findViewById(R.id.viewPager);
+            if (viewPager != null) {
+                viewPager.setCurrentItem(0);
+            }
         }
-        requireActivity().findViewById(R.id.viewPager).post(() -> {
-            ViewPager2 viewPager = requireActivity().findViewById(R.id.viewPager);
-            viewPager.setCurrentItem(0);
-        });
     }
 
     private int getCategoryIdFromName(String categoryName) {
