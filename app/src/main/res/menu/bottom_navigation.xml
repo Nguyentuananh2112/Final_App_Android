@@ -18,8 +18,8 @@
 
     <item
         android:id="@+id/budget"
-        android:title="Budget"
-        android:icon="@drawable/budget2"
+        android:title="Report"
+        android:icon="@drawable/report"
 
         />
 <!--    <item-->
