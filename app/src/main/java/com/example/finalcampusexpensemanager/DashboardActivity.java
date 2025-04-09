@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,6 +17,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.pm.PackageInfoCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.viewpager2.widget.ViewPager2;
@@ -36,6 +40,7 @@ public class DashboardActivity
     ViewPager2 viewPager2;
     int userId;
     private boolean notificationsEnabled = true;
+    private static final int NOTIFICATION_PERMISSION_CODE = 1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,7 +77,7 @@ public class DashboardActivity
             public boolean onMenuItemClick(@NonNull MenuItem menuItem) {
                 new AlertDialog.Builder(DashboardActivity.this)
                         .setTitle("Logout")
-                        .setMessage("Ara you sure wanna logout ??")
+                        .setMessage("Ara you sure wanna logout ?")
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int which) {
@@ -149,9 +154,7 @@ public class DashboardActivity
 
             // Nếu bật thông báo, yêu cầu quyền thông báo của hệ thống
             if (notificationsEnabled) {
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                    requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 1);
-                }
+                checkAndRequestNotificationPermission();
             }
             
             return true;
@@ -159,22 +162,23 @@ public class DashboardActivity
         return super.onOptionsItemSelected(item);
     }
 
+    private void checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_PERMISSION_CODE);
+            }
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1) {
+        if (requestCode == NOTIFICATION_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Quyền được cấp, hiển thị thông báo chào mừng
-                NotificationHelper notificationHelper = new NotificationHelper(this);
-                notificationHelper.showWelcomeNotification();
+                // Quyền đã được cấp
             } else {
-                // Nếu không được cấp quyền, tắt thông báo
-                notificationsEnabled = false;
-                SharedPreferences.Editor editor = getSharedPreferences("AppPrefs", MODE_PRIVATE).edit();
-                editor.putBoolean("notifications_enabled", false);
-                editor.apply();
-                updateNotificationIcon();
-                Toast.makeText(this, "Notifications disabled due to permission denied", Toast.LENGTH_SHORT).show();
+                // Quyền bị từ chối
             }
         }
     }

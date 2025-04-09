@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +13,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,6 +37,7 @@ public class HomeFragment extends Fragment {
     private DatabaseHelper dbHelper;
     private int userId;
     private MaterialButton seeAllButton;
+    private static final int NOTIFICATION_PERMISSION_CODE = 1;
 
     public HomeFragment() {}
 
@@ -74,19 +78,26 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         
         // Yêu cầu quyền thông báo của hệ thống
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 1);
+        checkAndRequestNotificationPermission();
+    }
+
+    private void checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_PERMISSION_CODE);
+            }
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1) {
+        if (requestCode == NOTIFICATION_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Quyền được cấp, hiển thị thông báo chào mừng
-                NotificationHelper notificationHelper = new NotificationHelper(requireContext());
-                notificationHelper.showWelcomeNotification();
+                // Quyền đã được cấp
+            } else {
+                // Quyền bị từ chối
             }
         }
     }
@@ -156,17 +167,6 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         loadTransactions();
-    }
-
-
-    private void showWelcomeNotification() {
-        SharedPreferences prefs = requireContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE);
-        boolean notificationsEnabled = prefs.getBoolean("notifications_enabled", false);
-        
-        if (notificationsEnabled) {
-            NotificationHelper notificationHelper = new NotificationHelper(requireContext());
-            notificationHelper.showWelcomeNotification();
-        }
     }
 }
 
