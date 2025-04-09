@@ -148,29 +148,6 @@ public class NotificationHelper {
         notificationManager.notify((int) System.currentTimeMillis(), builder.build());
     }
 
-    public void showWelcomeNotification() {
-        vibrate();
-        
-        Intent intent = new Intent(context, DashboardActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                context,
-                0,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-        );
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle("Welcome to Expense Manager")
-                .setContentText("Start managing your expenses today!")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        notificationManager.notify(NOTIFICATION_ID, builder.build());
-    }
-
     public void showBudgetWarningNotification(int totalIncome, int totalExpense) {
         if (!checkNotificationPermission() || !checkNotificationEnabled()) {
             return;
